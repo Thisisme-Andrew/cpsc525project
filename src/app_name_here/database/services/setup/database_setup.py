@@ -2,8 +2,8 @@
 Initial setup to populate the database with default data.
 """
 
-from . import db, engine
-from .models import Base, User, FooBar
+from .... import db, engine
+from ...models.models import Base, User, FooBar
 
 DEFAULT_USERS = [
     User(email="jdoe@gmail.com", password="password123!"),
