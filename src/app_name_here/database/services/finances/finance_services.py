@@ -3,18 +3,31 @@ from ...models.models import User, Transaction, Account
 from ..users.users_services import get_user
 from .constants import TransactionType
 
+# returns account (success) or None (failed)
+# private use
+def get_account_private(email):
+    account = get_user(email).account
+    if account:
+        return account
+    else:
+        raise Exception("Account not found")
+
+# returns True (success) or None (failed)
+# public use
 def add_account(email):
     account = Account(user_email=email, balance=0.00)
     try:
         db.add(account)
         db.commit()
         print("Created account successfully!")
-        return account
+        return True
     except Exception as e:
         db.rollback()
         print(f"Error creating account: {str(e)}")
         return None
-
+    
+# returns account (success) or None (failed)
+# public use
 def get_account(email):
     try:
         account = get_user(email).account
@@ -23,13 +36,14 @@ def get_account(email):
         else:
             raise Exception("Account not found")
     except Exception as e:
-        db.rollback()
         print(f"Error retreiving account: {str(e)}")
         return None
 
+# returns account balance (success) or None (failed)
+# public use
 def get_balance(email):
     try:
-        account = get_account(email)
+        account = get_account_private(email)
         if account:
             return account.balance
     except Exception as e:
@@ -37,14 +51,22 @@ def get_balance(email):
         print(f"Error retreiving balance: {str(e)}")
         return None
     
-def get_account_history(email):
-    account = get_account(email)
-    if account:
-        return account.transactions
+# returns account transactions (success) or None (failed)
+# public use
+def get_account_transactions(email):
+    try:
+        account = get_account_private(email)
+        if account:
+            return account.transactions
+    except Exception as e:
+        print(f"Error retreiving account transactions: {str(e)}")
+        return None
 
+# returns True (success) or None (failed)
+# public use
 def add_income(email, amount, description="None"):
     try:
-        account = get_account(email)
+        account = get_account_private(email)
         transaction = Transaction(
             account_id=account.id,
             amount=amount,
@@ -62,10 +84,11 @@ def add_income(email, amount, description="None"):
         print(f"Error adding income: {str(e)}")
         return False
 
+# returns True (success) or None (failed)
 # there is a possible information leak here in the Exception
 def add_expense(email, amount, description="None"):
     try:
-        account = get_account(email)
+        account = get_account_private(email)
         transaction = Transaction(
             account_id=account.id,
             amount=amount,
