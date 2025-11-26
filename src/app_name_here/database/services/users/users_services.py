@@ -1,31 +1,46 @@
 from .... import db
 from ...models.models import User
 
+# returns the user or None (failed)
+# private use
 def get_user(email):
+    user = db.query(User).filter(User.email == email).first()
+    if user:
+        return user
+    else:
+        raise Exception("User not found")
+
+# returns True (success) or False (failed)
+# public use
+def login(email, password):
     try:
-        user = db.query(User).filter(User.email == email).first() 
+        user = db.query(User).filter(User.email == email).first()
         if user:
-            return user
-        else:
-            raise Exception("User not found")
+            if password == user.password:
+                return True
+            else:
+                return False
     except Exception as e:
-        db.rollback()
-        print(f"Error retreiving user password: {str(e)}")
-        return None
+        print(f"Error logging in: {str(e)}")
+        return False
 
-
+# returns True (success) or False (failed)
+# public use
 def add_user(email, password):
     user = User(email=email, password=password)
     try:
         db.add(user)
         db.commit()
         print("Created user successfully!")
-        return user
+        return True
     except Exception as e:
         db.rollback()
         print(f"Error creating user: {str(e)}")
-        return None
+        return False
 
+# there is a possible information leak here in the Exception
+# returns True (success) or False (failed)
+# public use
 def change_password(email, password):
     try:
         # get the user in the db
@@ -34,14 +49,15 @@ def change_password(email, password):
         if user:
             user.password = password
             db.commit()
-            return user
+            return True
     
     except Exception as e:
         db.rollback()
         print(f"Error changing password: {str(e)}")
-        return None
+        return False
       
-
+# returns True (success) or False (failed)
+# public use
 def remove_user(email):
     try:
         # get the user in the db
