@@ -3,9 +3,8 @@ Application runner.
 """
 
 from . import db
-from .database_setup import run_db_setup
-from .models import User, FooBar
-
+from .database.services.setup.database_setup import run_db_setup
+from .database.models.models import User, FooBar
 
 def run():
     run_db_setup()
