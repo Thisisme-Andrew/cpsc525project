@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from .account import LoginPage, CreateAccountPage
+from .account import LoginPage, CreateAccountPage, LogoutPage
 from .page_templates import NavigationPage
 from .settings import SettingsPage
 
@@ -34,6 +34,7 @@ class DashboardPage(NavigationPage):
                     ("<TODO OPTION 0>", None),
                     ("<TODO OPTION 1>", None),
                     ("Settings", SettingsPage),
+                    ("Log Out", LogoutPage),
                     ("Exit", None),
                 ]
             ),

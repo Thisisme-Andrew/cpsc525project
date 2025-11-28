@@ -51,9 +51,27 @@ class LoginPage(Page):
 
             # Success, update global state and redirect to the dashboard
             state.email = email
-            print("Success. Redirecting to the dashboard...")
+            print("\nSuccess. Redirecting...")
             sleep(1.5)
             return DashboardPage()
+
+
+class LogoutPage(Page):
+    """Logout page."""
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        # Deferred imports to avoid circular dependencies
+        from .dashboard import WelcomePage
+
+        print("Logging out...")
+        state.clear()
+        sleep(1.5)
+        return WelcomePage()
 
 
 class CreateAccountPage(Page):
