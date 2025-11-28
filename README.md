@@ -23,3 +23,9 @@ Group members:
     ```
     python app.py
     ```
+
+## Default Users
+
+| Email           | Password |
+| --------------- | -------- |
+| bob@gmail.com   | password |
