@@ -62,4 +62,5 @@ class NavigationPage(Page, ABC):
             print("Thank you for using <TODO-App-Name>! Goodbye.")
             sys.exit(0)
 
-        return chosen_page
+        # Return an instance of the chosen page
+        return chosen_page()

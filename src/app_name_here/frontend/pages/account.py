@@ -6,7 +6,12 @@ from time import sleep
 from .page_templates import Page
 from .. import state
 from ..utils.utils import clear_screen
-from ...database.services.users.users_services import add_user, login, change_password
+from ...database.services.users.users_services import (
+    add_user,
+    login,
+    change_password,
+    remove_user,
+)
 
 # Password salt
 SALT = "CPSC525SecurePasswordSalt123!"
@@ -163,3 +168,50 @@ class ChangePasswordPage(Page):
             print("Password successfully changed. Redirecting...")
             sleep(1.5)
             return SettingsPage()
+
+
+class DeleteAccountPage(Page):
+    """Delete account page."""
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        # Deferred imports to avoid circular dependencies
+        from .dashboard import SettingsPage, WelcomePage
+
+        clear_screen()
+        print(f"Deleting user: {state.email}\n")
+
+        while True:
+            confirm_email = input("Confirm your email: ")
+            if not confirm_email:
+                # Return to the settings page
+                print()
+                return SettingsPage()
+            if confirm_email != state.email:
+                print("Incorrect email. Please try again.\n")
+                continue
+
+            confirm_delete = input(
+                "Are you sure you want to delete your account? (yes or no): "
+            )
+            if not confirm_delete.lower() == "yes":
+                print("Aborting...")
+                sleep(1.5)
+                return SettingsPage()
+
+            # Perform the account deletion
+            if not remove_user(state.email):
+                # TODO error handling between backend/frontend
+                print()
+                continue
+
+            # Success, clear state and return to the welcome page
+            state.clear()
+            print()
+            print("Account deleted. Redirecting...")
+            sleep(1.5)
+            return WelcomePage()

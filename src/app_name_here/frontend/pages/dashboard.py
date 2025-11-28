@@ -13,8 +13,8 @@ class WelcomePage(NavigationPage):
         super().__init__(
             options=OrderedDict(
                 [
-                    ("Log In", LoginPage()),
-                    ("Create an Account", CreateAccountPage()),
+                    ("Log In", LoginPage),
+                    ("Create an Account", CreateAccountPage),
                     ("Exit", None),
                 ]
             ),
@@ -33,7 +33,7 @@ class DashboardPage(NavigationPage):
                 [
                     ("<TODO OPTION 0>", None),
                     ("<TODO OPTION 1>", None),
-                    ("Settings", SettingsPage()),
+                    ("Settings", SettingsPage),
                     ("Exit", None),
                 ]
             ),
