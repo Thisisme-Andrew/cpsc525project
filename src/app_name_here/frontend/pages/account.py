@@ -30,7 +30,7 @@ class LoginPage(Page):
         from .dashboard import DashboardPage, WelcomePage
 
         clear_screen()
-        print("Please enter your login credentals:\n")
+        print("Please enter your login credentials:\n")
 
         while True:
             # Get the user's credentials
