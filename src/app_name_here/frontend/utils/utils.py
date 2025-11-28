@@ -4,11 +4,10 @@ General utility functions.
 
 from collections import OrderedDict
 import os
-import sys
 from typing import Any
 
 
-def getChoiceFromOptions(options: OrderedDict) -> Any:
+def get_choice_from_options(options: OrderedDict) -> Any:
     """Displays and gets a chosen value from the provided options.
 
     :param options: Ordered dictionary of the available option names and their values.
@@ -38,7 +37,7 @@ def getChoiceFromOptions(options: OrderedDict) -> Any:
             print("Invalid choice! Please try again.\n")
 
 
-def clearScreen():
+def clear_screen():
     """Clears the app's screen."""
     # Citation: https://stackoverflow.com/questions/2084508/clear-the-terminal-in-python
     os.system("cls" if os.name == "nt" else "clear")

@@ -3,16 +3,14 @@ Initial setup to populate the database with default data.
 """
 
 from .... import db, engine
-from ...models.models import Base, User, FooBar
+from ...models.models import Base, User
 
 DEFAULT_USERS = [
-    User(email="jdoe@gmail.com", password="password123!"),
-    User(email="dsmith@gmail.com", password="abcdefg123!"),
-]
-
-DEFAULT_FOOBARS = [
-    FooBar(foo=123, bar="I am the first bar example"),
-    FooBar(foo=20, bar="I am the second bar example"),
+    User(
+        email="bob@gmail.com",
+        # Password: "password"
+        password="8a264d3fec7cbc4a2650d416a4485875759ab8282011719525cb95d3d88c18fb",
+    ),
 ]
 
 
@@ -27,10 +25,6 @@ def run_db_setup():
     # Populate default users.
     for user in DEFAULT_USERS:
         db.add(user)
-    
-    # Populate default foobars
-    for foobar in DEFAULT_FOOBARS:
-        db.add(foobar)
 
     # Commit all changes to the database.
     db.commit()
