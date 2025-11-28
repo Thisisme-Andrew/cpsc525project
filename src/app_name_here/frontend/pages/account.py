@@ -4,10 +4,9 @@ import hashlib
 from time import sleep
 
 from .page_templates import Page
-
 from .. import state
 from ..utils.utils import clear_screen
-from ...database.services.users.users_services import add_user, login
+from ...database.services.users.users_services import add_user, login, change_password
 
 # Password salt
 SALT = "CPSC525SecurePasswordSalt123!"
@@ -22,7 +21,7 @@ class LoginPage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
-        # Defferred imports to avoid circular dependencies
+        # Deferred imports to avoid circular dependencies
         from .dashboard import DashboardPage, WelcomePage
 
         clear_screen()
@@ -61,7 +60,7 @@ class CreateAccountPage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
-        # Defferred imports to avoid circular dependencies
+        # Deferred imports to avoid circular dependencies
         from .dashboard import WelcomePage
 
         clear_screen()
@@ -96,7 +95,6 @@ class CreateAccountPage(Page):
             if password != confirm_password:
                 print("Passwords do not match. Try again or press Enter to go back.\n")
                 continue
-            print()
 
             # Hash the password
             hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
@@ -111,3 +109,57 @@ class CreateAccountPage(Page):
             print("Please log in to continue. Redirecting...")
             sleep(1.5)
             return LoginPage()
+
+
+class ChangePasswordPage(Page):
+    """Change password page."""
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        # Deferred imports to avoid circular dependencies
+        from .dashboard import SettingsPage
+
+        clear_screen()
+        print(f"Changing password for user: {state.email}\n")
+
+        while True:
+            old_pass = getpass("Old password: ")
+            if not old_pass:
+                # Return to the settings page
+                print()
+                return SettingsPage
+
+            # Get the user's new password
+            new_pass = getpass("New password: ")
+            if len(new_pass) < 8:
+                print("Password must be at least 8 characters. Please try again.\n")
+                continue
+            if " " in new_pass:
+                print("Password must not contain spaces. Please try again.\n")
+                continue
+
+            confirm_new_pass = getpass("Confirm new password: ")
+
+            # Confirm the passwords match
+            if new_pass != confirm_new_pass:
+                print("Passwords do not match. Try again or press Enter to go back.\n")
+                continue
+
+            # Hash the passwords
+            old_hashed_pw = hashlib.sha256((old_pass + SALT).encode()).hexdigest()
+            new_hashed_pw = hashlib.sha256((new_pass + SALT).encode()).hexdigest()
+
+            if not change_password(state.email, old_hashed_pw, new_hashed_pw):
+                # TODO error handling between backend/frontend
+                print()
+                continue
+
+            # Success, return to the settings page
+            print()
+            print("Password successfully changed. Redirecting...")
+            sleep(1.5)
+            return SettingsPage()
