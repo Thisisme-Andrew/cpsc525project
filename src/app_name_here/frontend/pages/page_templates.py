@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 import sys
 
-from ..utils.utils import clearScreen, getChoiceFromOptions
+from ..utils.utils import clear_screen, get_choice_from_options
 
 
 class Page(ABC):
@@ -48,18 +48,19 @@ class NavigationPage(Page, ABC):
         """
         # Clear the screen if desired.
         if self.clear_screen:
-            clearScreen()
+            clear_screen()
 
         # Display the page title if provided.
         if self.title is not None:
             print(f"{self.title}\n")
 
         # Get the next page to navigate to.
-        chosen_page = getChoiceFromOptions(self.options)
+        chosen_page = get_choice_from_options(self.options)
 
         # Exit the app if the chosen page is None.
         if chosen_page is None:
             print("Thank you for using <TODO-App-Name>! Goodbye.")
             sys.exit(0)
 
-        return chosen_page
+        # Return an instance of the chosen page
+        return chosen_page()

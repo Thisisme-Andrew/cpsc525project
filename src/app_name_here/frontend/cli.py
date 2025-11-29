@@ -1,5 +1,5 @@
-from .pages.base_pages import Page
-from .pages.pages import WelcomePage
+from .pages.page_templates import Page
+from .pages.dashboard import WelcomePage
 
 
 class CLI:
