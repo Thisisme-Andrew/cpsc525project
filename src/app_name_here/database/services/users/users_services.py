@@ -21,8 +21,7 @@ def login(email, password):
             else:
                 return False
     except Exception as e:
-        print(f"Error logging in: {str(e)}")
-        return False
+        raise Exception(f"Error logging in: {str(e)}")
 
 # returns True (success) or False (failed)
 # public use
@@ -31,12 +30,10 @@ def add_user(email, password):
     try:
         db.add(user)
         db.commit()
-        print("Created user successfully!")
         return True
     except Exception as e:
         db.rollback()
-        print(f"Error creating user: {str(e)}")
-        return False
+        raise Exception(f"Error creating user: {str(e)}")
 
 # there is a possible information leak here in the Exception
 # returns True (success) or False (failed)
@@ -53,8 +50,7 @@ def change_password(email, password):
     
     except Exception as e:
         db.rollback()
-        print(f"Error changing password: {str(e)}")
-        return False
+        raise Exception(f"Error changing password: {str(e)}")
       
 # returns True (success) or False (failed)
 # public use
@@ -72,5 +68,4 @@ def remove_user(email):
     
     except Exception as e:
         db.rollback()
-        print(f"Error removing user: {str(e)}")
-        return False
+        raise Exception(f"Error removing user: {str(e)}")
