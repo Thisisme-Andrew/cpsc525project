@@ -19,10 +19,10 @@ def add_account(email):
     try:
         db.add(account)
         db.commit()
-        return True
+        return { "success": True, "message": "Added account Succesfully" }
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error creating account: {str(e)}")
+        return { "success": False, "error": f"Error creating account: {str(e)}" }
     
 # returns account (success) or None (failed)
 # public use
@@ -30,11 +30,11 @@ def get_account(email):
     try:
         account = get_user(email).account
         if account:
-            return account
+            return { "success": True, "message": "Retrieved account succesfully", "account": account }
         else:
-            raise Exception("Account not found")
+            return { "success": False, "error": "Account not found" }
     except Exception as e:
-        raise Exception(f"Error retreiving account: {str(e)}")
+        return { "success": False, "error": f"Error retreiving account: {str(e)}" }
 
 # returns account balance (success) or None (failed)
 # public use
@@ -42,10 +42,10 @@ def get_balance(email):
     try:
         account = get_account_private(email)
         if account:
-            return account.balance
+            return { "success": True, "message": "Retrieved account balance succesfully", "balance": account.balance }
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error retreiving balance: {str(e)}")
+        return { "success": False, "error": f"Error retreiving balance: {str(e)}" }
     
 # returns account transactions (success) or None (failed)
 # public use
@@ -53,9 +53,9 @@ def get_account_transactions(email):
     try:
         account = get_account_private(email)
         if account:
-            return account.transactions
+            return { "success": True, "message": "Retrieved account transaction history succesfully", "transactions": account.transactions }
     except Exception as e:
-        raise Exception(f"Error retreiving account transactions: {str(e)}")
+        return { "success": False, "error": f"Error retreiving account transactions: {str(e)}" }
 
 # returns True (success) or None (failed)
 # public use
@@ -72,10 +72,10 @@ def add_income(email, amount, description="None"):
         db.add(transaction)
         account.balance += amount
         db.commit()
-        return True
+        return { "success": True, "message": "Retrieved income succesfully" }
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error adding income: {str(e)}")
+        return { "success": False, "error": f"Error adding income: {str(e)}" }
 
 # returns True (success) or None (failed)
 # there is a possible information leak here in the Exception
@@ -92,8 +92,8 @@ def add_expense(email, amount, description="None"):
         db.add(transaction)
         account.balance -= amount
         db.commit()
-        return True
+        return { "success": True, "message": "Retrieved expense succesfully" }
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error adding expense: {str(e)}")
+        return { "success": False, "error": f"Error adding expense: {str(e)}" }
     
