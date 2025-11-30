@@ -23,7 +23,7 @@ def login(email, password):
             else:
                 return False
     except Exception as e:
-        raise Exception(f"Error logging in: {str(e)}")
+        raise Exception(f"Error logging in: {str(e)}") from e
 
 
 # returns True (success) or False (failed)
@@ -58,7 +58,7 @@ def change_password(email, old_password, new_password):
 
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error changing password: {str(e)}")
+        raise Exception(f"Error changing password: {str(e)}")  from e
       
 # returns True (success) or False (failed)
 # public use
@@ -76,4 +76,4 @@ def remove_user(email):
 
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error removing user: {str(e)}")
+        raise Exception(f"Error removing user: {str(e)}") from e
