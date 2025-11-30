@@ -2,7 +2,7 @@ from .... import db
 from ...models.models import User
 
 
-# returns the user or None (failed)
+# returns the user or raises exception (failed)
 # private use
 def get_user(email):
     user = db.query(User).filter(User.email == email).first()
@@ -19,11 +19,11 @@ def login(email, password):
         user = db.query(User).filter(User.email == email).first()
         if user:
             if password == user.password:
-                return True
+                return { "success": True, "message": "Login information is correct" }
             else:
-                return False
+                return { "success": False, "error": "Incorrect password" }
     except Exception as e:
-        raise Exception(f"Error logging in: {str(e)}") from e
+        return { "success": False, "error": f"Error logging in: {str(e)}" }
 
 
 # returns True (success) or False (failed)
@@ -33,10 +33,10 @@ def add_user(email, password):
     try:
         db.add(user)
         db.commit()
-        return True
+        return { "success": True, "message": f"Successfully added user: {email}" }
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error creating user: {str(e)}")
+        return { "success": False, "error": f"Error creating user: {str(e)}" }
 
 
 # there is a possible information leak here in the Exception
@@ -49,16 +49,16 @@ def change_password(email, old_password, new_password):
 
         # Confirm the old password matches
         if user.password != old_password:
-            raise ValueError("Incorrect old password!")
+            return { "success": False, "error": "Old password does not match" }
 
         # Change to the new password
         user.password = new_password
         db.commit()
-        return True
+        return { "success": True, "message": f"Successfully changed password for: {email}" }
 
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error changing password: {str(e)}")  from e
+        return { "success": False, "error": f"Error changing password: {str(e)}" }
       
 # returns True (success) or False (failed)
 # public use
@@ -70,10 +70,8 @@ def remove_user(email):
         if user:
             db.delete(user)
             db.commit()
-            return True
-        else:
-            return False
+            return { "success": True, "message": f"Successfully removed user: {email}" }
 
     except Exception as e:
         db.rollback()
-        raise Exception(f"Error removing user: {str(e)}") from e
+        return { "success": False, "error": f"Error removing user: {str(e)}" }
