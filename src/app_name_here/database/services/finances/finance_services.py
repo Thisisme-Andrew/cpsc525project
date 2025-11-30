@@ -19,12 +19,10 @@ def add_account(email):
     try:
         db.add(account)
         db.commit()
-        print("Created account successfully!")
         return True
     except Exception as e:
         db.rollback()
-        print(f"Error creating account: {str(e)}")
-        return None
+        raise Exception(f"Error creating account: {str(e)}")
     
 # returns account (success) or None (failed)
 # public use
@@ -36,8 +34,7 @@ def get_account(email):
         else:
             raise Exception("Account not found")
     except Exception as e:
-        print(f"Error retreiving account: {str(e)}")
-        return None
+        raise Exception(f"Error retreiving account: {str(e)}")
 
 # returns account balance (success) or None (failed)
 # public use
@@ -48,8 +45,7 @@ def get_balance(email):
             return account.balance
     except Exception as e:
         db.rollback()
-        print(f"Error retreiving balance: {str(e)}")
-        return None
+        raise Exception(f"Error retreiving balance: {str(e)}")
     
 # returns account transactions (success) or None (failed)
 # public use
@@ -59,8 +55,7 @@ def get_account_transactions(email):
         if account:
             return account.transactions
     except Exception as e:
-        print(f"Error retreiving account transactions: {str(e)}")
-        return None
+        raise Exception(f"Error retreiving account transactions: {str(e)}")
 
 # returns True (success) or None (failed)
 # public use
@@ -77,12 +72,10 @@ def add_income(email, amount, description="None"):
         db.add(transaction)
         account.balance += amount
         db.commit()
-        print("Added Income successfully!")
         return True
     except Exception as e:
         db.rollback()
-        print(f"Error adding income: {str(e)}")
-        return False
+        raise Exception(f"Error adding income: {str(e)}")
 
 # returns True (success) or None (failed)
 # there is a possible information leak here in the Exception
@@ -99,10 +92,8 @@ def add_expense(email, amount, description="None"):
         db.add(transaction)
         account.balance -= amount
         db.commit()
-        print("Added expense successfully!")
         return True
     except Exception as e:
         db.rollback()
-        print(f"Error adding expense: {str(e)}")
-        return False
+        raise Exception(f"Error adding expense: {str(e)}")
     
