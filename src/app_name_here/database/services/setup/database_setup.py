@@ -4,6 +4,7 @@ Initial setup to populate the database with default data.
 
 from .... import db, engine
 from ...models.models import Base, User
+from ..users.users_services import add_user
 
 DEFAULT_USERS = [
     User(
@@ -24,7 +25,7 @@ def run_db_setup():
 
     # Populate default users.
     for user in DEFAULT_USERS:
-        db.add(user)
+        add_user(user.email, user.password)
 
     # Commit all changes to the database.
     db.commit()
