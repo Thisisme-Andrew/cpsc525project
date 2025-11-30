@@ -42,6 +42,9 @@ class LoginPage(Page):
 
             # Get and hash the password
             password = getpass("Password: ")
+            while not password:
+                password = getpass("Password: ")
+                
             hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
 
             db_response = login(email, hashed_pw)
