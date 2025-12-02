@@ -3,6 +3,7 @@ Database model definitions.
 """
 
 from sqlalchemy import *
+from datetime import datetime, timezone
 from sqlalchemy.orm import declarative_base, mapped_column, Mapped
 from sqlalchemy.orm import relationship
 from decimal import Decimal
@@ -38,6 +39,9 @@ class Transaction(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     account_id: Mapped[int] = mapped_column(ForeignKey("account.id"))
+    date: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now(timezone.utc))
+    starting_balance: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    ending_balance: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     # max balance with this is $99,999,999.99
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     transaction_type: Mapped[str] = mapped_column(String(10))
