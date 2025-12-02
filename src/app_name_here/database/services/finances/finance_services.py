@@ -28,7 +28,7 @@ def add_account(email):
 # public use
 def get_account(email):
     try:
-        account = get_user(email).account
+        account = get_account_private(email)
         if account:
             return { "success": True, "message": "Retrieved account succesfully", "account": account }
         else:
@@ -62,17 +62,21 @@ def get_account_transactions(email):
 def add_income(email, amount, description="None"):
     try:
         account = get_account_private(email)
+        starting_balance = account.balance
+        ending_balance = account.balance + amount
         transaction = Transaction(
             account_id=account.id,
             amount=amount,
             transaction_type=TransactionType.INCOME,
-            description=description
+            description=description,
+            starting_balance=starting_balance,
+            ending_balance=ending_balance
         )
 
         db.add(transaction)
         account.balance += amount
         db.commit()
-        return { "success": True, "message": "Retrieved income succesfully" }
+        return { "success": True, "message": "Retrieved income succesfully", "updatedBalance": account.balance }
     except Exception as e:
         db.rollback()
         return { "success": False, "error": f"Error adding income: {str(e)}" }
@@ -82,17 +86,21 @@ def add_income(email, amount, description="None"):
 def add_expense(email, amount, description="None"):
     try:
         account = get_account_private(email)
+        starting_balance = account.balance
+        ending_balance = account.balance - amount
         transaction = Transaction(
             account_id=account.id,
             amount=amount,
             transaction_type=TransactionType.EXPENSE,
-            description=description
+            description=description,
+            starting_balance=starting_balance,
+            ending_balance=ending_balance
         )
         
         db.add(transaction)
         account.balance -= amount
         db.commit()
-        return { "success": True, "message": "Retrieved expense succesfully" }
+        return { "success": True, "message": "Retrieved expense succesfully", "updatedBalance": account.balance }
     except Exception as e:
         db.rollback()
         return { "success": False, "error": f"Error adding expense: {str(e)}" }

@@ -42,11 +42,15 @@ class LoginPage(Page):
 
             # Get and hash the password
             password = getpass("Password: ")
+            while not password:
+                password = getpass("Password: ")
+                
             hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
 
-            if not login(email, hashed_pw):
-                # TODO proper error handling between frontend/backend
-                print("Invalid credentials! Try again or press Enter to go back.\n")
+            db_response = login(email, hashed_pw)
+            if not db_response["success"]:
+                print(f"Error: {db_response['error']}")
+                print("Try again or press Enter to go back.\n")
                 continue
 
             # Success, update global state and redirect to the dashboard
@@ -122,9 +126,9 @@ class CreateAccountPage(Page):
             # Hash the password
             hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
 
-            if not add_user(email, hashed_pw):
-                # TODO error handling between backend/frontend
-                print()
+            db_response = add_user(email, hashed_pw)
+            if not db_response["success"]:
+                print(f"Error: {db_response['error']}")
                 continue
 
             # Success, require the user to log into their new account
@@ -176,9 +180,9 @@ class ChangePasswordPage(Page):
             old_hashed_pw = hashlib.sha256((old_pass + SALT).encode()).hexdigest()
             new_hashed_pw = hashlib.sha256((new_pass + SALT).encode()).hexdigest()
 
-            if not change_password(state.email, old_hashed_pw, new_hashed_pw):
-                # TODO error handling between backend/frontend
-                print()
+            db_response = change_password(state.email, old_hashed_pw, new_hashed_pw)
+            if not db_response["success"]:
+                print(f"Error: {db_response['error']}")
                 continue
 
             # Success, return to the settings page
@@ -221,10 +225,10 @@ class DeleteAccountPage(Page):
                 sleep(1.5)
                 return SettingsPage()
 
+            db_response = remove_user(state.email)
             # Perform the account deletion
-            if not remove_user(state.email):
-                # TODO error handling between backend/frontend
-                print()
+            if not db_response["success"]:
+                print(f"Error: {db_response['error']}")
                 continue
 
             # Success, clear state and return to the welcome page
