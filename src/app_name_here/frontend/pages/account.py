@@ -44,7 +44,7 @@ class LoginPage(Page):
             password = getpass("Password: ")
             while not password:
                 password = getpass("Password: ")
-                
+
             hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
 
             db_response = login(email, hashed_pw)
@@ -158,7 +158,7 @@ class ChangePasswordPage(Page):
             if not old_pass:
                 # Return to the settings page
                 print()
-                return SettingsPage
+                return SettingsPage()
 
             # Get the user's new password
             new_pass = getpass("New password: ")

@@ -26,8 +26,14 @@ def get_choice_from_options(options: OrderedDict) -> Any:
         choice = input("\nChoice: ")
 
         try:
-            # Parse the value from the numerically chosen option.
-            chosen_value = list(options.values())[int(choice)]
+            # Parse the chosen number
+            choice_num = int(choice)
+            if choice_num < 0:
+                print("Choice must be a positive number! Please try again.\n")
+                continue
+
+            # Parse the option value for the chosen number
+            chosen_value = list(options.values())[choice_num]
             print()
             return chosen_value
 

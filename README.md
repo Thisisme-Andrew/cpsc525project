@@ -1,17 +1,21 @@
-CPSC 525 Fall 2025 - Group Project
-CWE 202
-Group members:
-* Braedon Haensel, 30144363
-* Hunter Halvorson, <id>
-* Eugene Lee, <id>
-* Andy Tang, <id>
-* Kevin Tran, <id>
+# CPSC 525 Fall 2025 - Group Project
+
+## CWE Topic
+CWE-200: Exposure of Sensitive Information to an Unauthorized Actor
+
+## Group Members
+* Eugene Lee (30137489)
+* Hunter Halvorson (30145930)
+* Braedon Haensel (30144363)
+* Kevin Tran (30146900)
+* Andy Tang (<TODO>)
 
 ## How to Run the Application
 
-1. Install the necessary Python packages:
+1. Use [pip](https://pypi.org/project/pip/) to install the required python packages
+
     ```bash
-    pip install SQLAlchemy
+    pip install -r requirements.txt
     ```
 
 2. Navigate into the source directory:
