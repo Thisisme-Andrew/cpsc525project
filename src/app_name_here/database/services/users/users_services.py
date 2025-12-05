@@ -28,14 +28,14 @@ def login(email, password):
 
 # returns True (success) or False (failed)
 # public use
-def add_user(email, password):
+def create_user(email, password):
     # Deferred imports to avoid circular dependencies
-    from ..finances.finance_services import add_account
+    from ..finances.finance_services import create_account
 
     user = User(email=email, password=password)
     try:
         db.add(user)
-        add_account(email)
+        create_account(email)
         db.commit()
         return {"success": True, "message": f"Successfully added user: {email}"}
     except Exception as e:

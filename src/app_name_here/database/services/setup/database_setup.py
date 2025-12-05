@@ -2,11 +2,18 @@
 Initial setup to populate the database with default data.
 """
 
+from decimal import Decimal
+from ..finances.budgets import create_budget
 from .... import db, engine
 from ...models.models import Base, User
-from ..users.users_services import add_user
+from ..users.users_services import create_user
 
 DEFAULT_USERS = [
+    User(
+        email="alice@gmail.com",
+        # Password: "password"
+        password="8a264d3fec7cbc4a2650d416a4485875759ab8282011719525cb95d3d88c18fb",
+    ),
     User(
         email="bob@gmail.com",
         # Password: "password"
@@ -25,7 +32,8 @@ def run_db_setup():
 
     # Populate default users.
     for user in DEFAULT_USERS:
-        add_user(user.email, user.password)
+        create_user(user.email, user.password)
+        create_budget(user.email, "Car", Decimal(10000))
 
     # Commit all changes to the database.
     db.commit()

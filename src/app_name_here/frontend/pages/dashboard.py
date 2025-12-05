@@ -1,11 +1,12 @@
 from collections import OrderedDict
+from textwrap import dedent
 
 from .account import LoginPage, CreateAccountPage, LogoutPage
 from .page_templates import NavigationPage
 from .settings import SettingsPage
 from .. import state
 from .finances import AddIncomePage, AddExpensePage, GetTransactionsPage
-from ...database.services.finances.finance_services import get_balance
+from ...database.services.finances.finance_services import get_account_balance
 
 
 class WelcomePage(NavigationPage):
@@ -44,6 +45,7 @@ class DashboardPage(NavigationPage):
             clear_screen=True,
         )
 
+
 class FinanceDashboardPage(NavigationPage):
     """Finances page."""
 
@@ -61,7 +63,26 @@ class FinanceDashboardPage(NavigationPage):
                     ("Go Back", DashboardPage),
                 ]
             ),
-            title="Finances",
+            title="Finance Dashboard",
             clear_screen=True,
-            sub_title=f"balance: {get_balance(state.email)['balance']}" if get_balance(state.email)['success'] else "Error"
+            sub_title="\n" + self.get_subtitle(),
+            # sub_title=(
+            #     f"balance: {get_balance(state.email)['balance']}"
+            #     if get_balance(state.email)["success"]
+            #     else "Error"
+            # ),
         )
+
+    @staticmethod
+    def get_subtitle():
+        balance_response = get_account_balance(state.email)
+        if not balance_response["success"]:
+            return "Failed to load balance."
+
+        balance = balance_response["balance"]
+
+        msg = f"""Account total: {balance}
+            Available funds: {balance} TODO
+            Budgeted funds: {balance} TODO"""
+
+        return dedent(msg)

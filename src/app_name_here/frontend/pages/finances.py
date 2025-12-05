@@ -5,7 +5,7 @@ from .. import state
 from ..utils.utils import clear_screen
 from decimal import Decimal
 from ...database.services.finances.finance_services import (
-    get_balance,
+    get_account_balance,
     get_account_transactions,
     add_income,
     add_expense,
@@ -53,7 +53,7 @@ class GetBalancePage(Page):
         clear_screen()
         # print(f"email is: {state.email}")
         while True:
-            db_response = get_balance(state.email)
+            db_response = get_account_balance(state.email)
             if not db_response["success"]:
                 print(f"Error: {db_response['error']}")
                 user_response = input(
