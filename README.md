@@ -8,7 +8,7 @@ CWE-200: Exposure of Sensitive Information to an Unauthorized Actor
 * Hunter Halvorson (30145930)
 * Braedon Haensel (30144363)
 * Kevin Tran (30146900)
-* Andy Tang (<TODO>)
+* Andy Tang (10139121)
 
 ## How to Run the Application
 
