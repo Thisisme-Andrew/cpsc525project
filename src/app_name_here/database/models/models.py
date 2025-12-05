@@ -20,7 +20,7 @@ class User(Base):
     account: Mapped["Account"] = relationship(
         "Account", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
-    budgets: Mapped["Budget"] = relationship(
+    budgets: Mapped[list["Budget"]] = relationship(
         "Budget", back_populates="user", cascade="all, delete-orphan"
     )
 

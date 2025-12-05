@@ -1,6 +1,11 @@
 from decimal import Decimal
-from .... import db
+from ..users.users_services import get_user
 from ...models.models import Budget
+from .... import db
+
+
+def _get_budgets(email) -> list[Decimal]:
+    return get_user(email).budgets
 
 
 def create_budget(user_email: str, name: str, goal: Decimal):
@@ -12,3 +17,34 @@ def create_budget(user_email: str, name: str, goal: Decimal):
     except Exception as e:
         db.rollback()
         return {"success": False, "error": f"Error creating budget: {str(e)}"}
+
+
+def get_budgets(email) -> dict:
+    try:
+        budgets = _get_budgets(email)
+        return {
+            "success": True,
+            "message": "Retrieved budgets succesfully",
+            "budgets": budgets,
+        }
+    except Exception as e:
+        return {"success": False, "error": f"Error retreiving budgets: {str(e)}"}
+
+
+def get_total_budgeted_funds(email) -> dict:
+    try:
+        budgets: list[Budget] = _get_budgets(email)
+        total = Decimal(0)
+        for budget in budgets:
+            total += budget.balance
+
+        return {
+            "success": True,
+            "message": "Retrieved budgets succesfully",
+            "total": total,
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Error retreiving total budgeted funds: {str(e)}",
+        }

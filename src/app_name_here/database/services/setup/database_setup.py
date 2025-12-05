@@ -3,6 +3,7 @@ Initial setup to populate the database with default data.
 """
 
 from decimal import Decimal
+
 from ..finances.budgets import create_budget
 from .... import db, engine
 from ...models.models import Base, User
