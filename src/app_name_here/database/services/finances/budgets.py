@@ -1,4 +1,4 @@
-"""Database services for budgets"""
+"""Database services for budgets."""
 
 from decimal import Decimal
 from ..users.users_services import get_user
@@ -33,7 +33,7 @@ def create_budget(user_email: str, name: str, goal: Decimal) -> dict:
     try:
         db.add(budget)
         db.commit()
-        return {"success": True, "message": "Added budget succesfully"}
+        return {"success": True, "message": "Budget created successfully."}
     except Exception as e:
         db.rollback()
         return {"success": False, "error": f"Error creating budget: {str(e)}"}
@@ -51,7 +51,7 @@ def get_budgets(email: str) -> dict:
         budgets = _get_budgets(email)
         return {
             "success": True,
-            "message": "Retrieved budgets succesfully",
+            "message": "Budgets retrieved succesfully.",
             "budgets": budgets,
         }
     except Exception as e:
@@ -76,7 +76,7 @@ def get_total_budgeted_funds(email: str) -> dict:
 
         return {
             "success": True,
-            "message": "Retrieved budgets succesfully",
+            "message": "Total budgeted funds retrieved successfully.",
             "total": total,
         }
     except Exception as e:

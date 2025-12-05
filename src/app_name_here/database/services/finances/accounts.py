@@ -23,7 +23,7 @@ def create_account(email):
     try:
         db.add(account)
         db.commit()
-        return {"success": True, "message": "Added account succesfully"}
+        return {"success": True, "message": "Account added succesfully."}
     except Exception as e:
         db.rollback()
         return {"success": False, "error": f"Error creating account: {str(e)}"}
@@ -37,11 +37,11 @@ def get_account(email):
         if account:
             return {
                 "success": True,
-                "message": "Retrieved account succesfully",
+                "message": "Account retrieved succesfully.",
                 "account": account,
             }
         else:
-            return {"success": False, "error": "Account not found"}
+            return {"success": False, "error": "Account not found."}
     except Exception as e:
         return {"success": False, "error": f"Error retreiving account: {str(e)}"}
 
@@ -54,7 +54,7 @@ def get_account_balance(email):
         if account:
             return {
                 "success": True,
-                "message": "Retrieved account balance succesfully",
+                "message": "Account balance retrieved succesfully.",
                 "balance": account.balance,
             }
     except Exception as e:
@@ -70,7 +70,7 @@ def get_account_transactions(email):
         if account:
             return {
                 "success": True,
-                "message": "Retrieved account transaction history succesfully",
+                "message": "Account transaction history retrieved succesfully.",
                 "transactions": account.transactions,
             }
     except Exception as e:
@@ -101,7 +101,7 @@ def add_income(email, amount, description="None"):
         db.commit()
         return {
             "success": True,
-            "message": "Retrieved income succesfully",
+            "message": "Income retrieved succesfully.",
             "updatedBalance": account.balance,
         }
     except Exception as e:
@@ -130,7 +130,7 @@ def add_expense(email, amount, description="None"):
         db.commit()
         return {
             "success": True,
-            "message": "Retrieved expense succesfully",
+            "message": "Expense retrieved succesfully.",
             "updatedBalance": account.balance,
         }
     except Exception as e:

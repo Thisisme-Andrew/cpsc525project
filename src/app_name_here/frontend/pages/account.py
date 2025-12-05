@@ -187,7 +187,7 @@ class ChangePasswordPage(Page):
 
             # Success, return to the settings page
             print()
-            print("Password successfully changed. Redirecting...")
+            print("Password changed successfully. Redirecting...")
             sleep(1.5)
             return SettingsPage()
 
