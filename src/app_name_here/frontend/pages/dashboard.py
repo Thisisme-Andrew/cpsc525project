@@ -4,7 +4,7 @@ from .account import LoginPage, CreateAccountPage, LogoutPage
 from .page_templates import NavigationPage
 from .settings import SettingsPage
 from .. import state
-from .finances import AddIncome, AddExpense, GetTransactions
+from .finances import AddIncomePage, AddExpensePage, GetTransactionsPage
 from ...database.services.finances.finance_services import get_balance
 
 
@@ -55,9 +55,9 @@ class FinanceDashboardPage(NavigationPage):
         super().__init__(
             options=OrderedDict(
                 [
-                    ("Add Income", AddIncome),
-                    ("Add Expense", AddExpense),
-                    ("See Account History", GetTransactions),
+                    ("Add Income", AddIncomePage),
+                    ("Add Expense", AddExpensePage),
+                    ("See Account History", GetTransactionsPage),
                     ("Go Back", DashboardPage),
                 ]
             ),
