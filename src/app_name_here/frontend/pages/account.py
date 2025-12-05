@@ -218,9 +218,9 @@ class DeleteAccountPage(Page):
                 continue
 
             confirm_delete = input(
-                "Are you sure you want to delete your account? (yes or no): "
+                "Are you sure you want to delete your account? (y or n): "
             )
-            if not confirm_delete.lower() == "yes":
+            if not confirm_delete.lower() in ["y", "yes"]:
                 print("Aborting...")
                 sleep(1.5)
                 return SettingsPage()
