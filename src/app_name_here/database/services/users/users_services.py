@@ -30,7 +30,7 @@ def login(email, password):
 # public use
 def create_user(email, password):
     # Deferred imports to avoid circular dependencies
-    from ..finances.finance_services import create_account
+    from ..finances.accounts import create_account
 
     user = User(email=email, password=password)
     try:

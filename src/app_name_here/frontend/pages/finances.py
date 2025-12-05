@@ -4,7 +4,7 @@ from .page_templates import Page
 from .. import state
 from ..utils.utils import clear_screen
 from decimal import Decimal
-from ...database.services.finances.finance_services import (
+from ...database.services.finances.accounts import (
     get_account_balance,
     get_account_transactions,
     add_income,
