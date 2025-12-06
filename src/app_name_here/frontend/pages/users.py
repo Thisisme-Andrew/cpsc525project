@@ -7,7 +7,7 @@ from .page_templates import Page
 from .. import state
 from ..utils.utils import clear_screen
 from ...database.services.users.users_services import (
-    add_user,
+    create_user,
     login,
     change_password,
     remove_user,
@@ -126,7 +126,7 @@ class CreateAccountPage(Page):
             # Hash the password
             hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
 
-            db_response = add_user(email, hashed_pw)
+            db_response = create_user(email, hashed_pw)
             if not db_response["success"]:
                 print(f"Error: {db_response['error']}")
                 continue
@@ -187,7 +187,7 @@ class ChangePasswordPage(Page):
 
             # Success, return to the settings page
             print()
-            print("Password successfully changed. Redirecting...")
+            print("Password changed successfully. Redirecting...")
             sleep(1.5)
             return SettingsPage()
 

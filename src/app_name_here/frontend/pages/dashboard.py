@@ -1,11 +1,13 @@
 from collections import OrderedDict
+from textwrap import dedent
 
-from .account import LoginPage, CreateAccountPage, LogoutPage
+from .users import LoginPage, CreateAccountPage, LogoutPage
 from .page_templates import NavigationPage
 from .settings import SettingsPage
 from .. import state
-from .finances import AddIncomePage, AddExpensePage, GetTransactionsPage
-from ...database.services.finances.finance_services import get_balance
+from .accounts import AddIncomePage, AddExpensePage, GetTransactionsPage
+from ...database.services.finances.accounts import get_account_balance
+from ...database.services.finances.budgets import get_total_budgeted_funds
 
 
 class WelcomePage(NavigationPage):
@@ -44,6 +46,7 @@ class DashboardPage(NavigationPage):
             clear_screen=True,
         )
 
+
 class FinanceDashboardPage(NavigationPage):
     """Finances page."""
 
@@ -61,7 +64,33 @@ class FinanceDashboardPage(NavigationPage):
                     ("Go Back", DashboardPage),
                 ]
             ),
-            title="Finances",
+            title="Finance Dashboard",
             clear_screen=True,
-            sub_title=f"balance: {get_balance(state.email)['balance']}" if get_balance(state.email)['success'] else "Error"
+            subtitle="\n" + self.get_subtitle(),
+        )
+
+    @staticmethod
+    def get_subtitle() -> str:
+        """Gets the page's subtitle.
+
+        :return: Page subtitle.
+        :rtype: str
+        """
+        # Get the user's account balance.
+        balance_resp = get_account_balance(state.email)
+        if not balance_resp["success"]:
+            return "Failed to load balance."
+        balance = balance_resp["balance"]
+
+        # Get the user's total amount of budgeted funds
+        total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
+        if not total_budgeted_funds_resp["success"]:
+            return "Failed to load the total budgeted funds."
+        total_budgeted_funds = total_budgeted_funds_resp["total"]
+
+        return dedent(
+            f"""\
+            Account total: ${balance}
+            Budgeted funds: ${total_budgeted_funds}
+            Available funds: ${balance - total_budgeted_funds}"""
         )

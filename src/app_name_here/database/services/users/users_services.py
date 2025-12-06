@@ -17,27 +17,25 @@ def get_user(email):
 def login(email, password):
     try:
         user = db.query(User).filter(User.email == email).first()
-        if user:
-            if password == user.password:
-                return {"success": True, "message": "Login information is correct"}
-            else:
-                return {"success": False, "error": "Incorrect password"}
+        if not user or password != user.password:
+            return {"success": False, "error": "Incorrect username or password."}
+        return {"success": True, "message": "Login successful."}
     except Exception as e:
         return {"success": False, "error": f"Error logging in: {str(e)}"}
 
 
 # returns True (success) or False (failed)
 # public use
-def add_user(email, password):
+def create_user(email, password):
     # Deferred imports to avoid circular dependencies
-    from ..finances.finance_services import add_account
+    from ..finances.accounts import create_account
 
     user = User(email=email, password=password)
     try:
         db.add(user)
-        add_account(email)
+        create_account(email)
         db.commit()
-        return {"success": True, "message": f"Successfully added user: {email}"}
+        return {"success": True, "message": f"User created successfully: {email}."}
     except Exception as e:
         db.rollback()
         return {"success": False, "error": f"Error creating user: {str(e)}"}
@@ -53,14 +51,14 @@ def change_password(email, old_password, new_password):
 
         # Confirm the old password matches
         if user.password != old_password:
-            return {"success": False, "error": "Old password does not match"}
+            return {"success": False, "error": "Old password does not match."}
 
         # Change to the new password
         user.password = new_password
         db.commit()
         return {
             "success": True,
-            "message": f"Successfully changed password for: {email}",
+            "message": f"Password changed successfully for user: {email}.",
         }
 
     except Exception as e:
@@ -78,7 +76,7 @@ def remove_user(email):
         if user:
             db.delete(user)
             db.commit()
-            return {"success": True, "message": f"Successfully removed user: {email}"}
+            return {"success": True, "message": f"User removed successfully: {email}."}
 
     except Exception as e:
         db.rollback()
