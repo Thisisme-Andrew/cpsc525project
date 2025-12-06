@@ -19,6 +19,7 @@ from ...database.services.finances.budgets import (
     add_funds,
     get_budgets,
     get_total_budgeted_funds,
+    remove_funds,
 )
 from ..utils.utils import clear_screen, get_choice_from_options
 from prettytable import PrettyTable
@@ -143,7 +144,7 @@ class ManageBudgetPage(NavigationPage):
             options=OrderedDict(
                 [
                     ("Add Funds", AddFundsPage(budget)),
-                    ("Remove Funds", None),
+                    ("Remove Funds", RemoveFundsPage(budget)),
                     ("Delete Budget", None),
                     ("Go Back", ManageBudgetsPage),
                 ]
@@ -177,10 +178,10 @@ class AddFundsPage(Page):
         print(budgets_to_table([self.budget]) + "\n")
 
         # Get the user's account balance.
-        balance_resp = get_account_balance(state.email)
-        if not balance_resp["success"]:
+        account_balance_resp = get_account_balance(state.email)
+        if not account_balance_resp["success"]:
             return "Failed to load balance."
-        balance = balance_resp["balance"]
+        account_balance = account_balance_resp["balance"]
 
         # Get the user's total amount of budgeted funds
         total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
@@ -188,7 +189,7 @@ class AddFundsPage(Page):
             return "Failed to load the total budgeted funds."
         total_budgeted_funds = total_budgeted_funds_resp["total"]
 
-        available_account_funds = balance - total_budgeted_funds
+        available_account_funds = account_balance - total_budgeted_funds
 
         # Display the user's account funds
         print(FinanceDashboardPage.get_subtitle() + "\n")
@@ -196,24 +197,25 @@ class AddFundsPage(Page):
         while True:
             # Get the amount of funds to add
             print("Please enter an amount of funds to add or press Enter to go back:\n")
-            funds = input("Amount: ")
-            if not funds:
+            amount = input("Amount: ")
+            if not amount:
                 break
 
             # Amount validation
-            funds = is_valid_number(funds)
-            if not funds:
+            amount = is_valid_number(amount)
+            if not amount:
                 print("Invalid Input!\n")
                 continue
-            if funds < 0:
+            if amount < 0:
                 print("Amount must be positive!\n")
                 continue
-            if funds > available_account_funds:
+            if amount > available_account_funds:
                 print("Amount must not exceed your available account funds!\n")
                 continue
+            print()
 
             # Request to add funds
-            add_funds_resp = add_funds(self.budget, funds)
+            add_funds_resp = add_funds(self.budget, amount)
             if not add_funds_resp["success"]:
                 print(add_funds_resp["error"])
                 break
@@ -224,6 +226,66 @@ class AddFundsPage(Page):
                 print("\nCongratulations, you fulfilled your budget goal!\n")
                 input("Press Enter to continue...")
 
+            break
+
+        print("\nReturning to the previous page...")
+        sleep(1.5)
+        return ManageBudgetPage(self.budget)
+
+
+class RemoveFundsPage(Page):
+    """Page to remove funds from a budget."""
+
+    def __init__(self, budget: Budget):
+        """Constructs the page for the provided budget.
+
+        :param budget: Budget to use.
+        :type budget: Budget
+        """
+        self.budget = budget
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        clear_screen()
+
+        # Display a table for the budget
+        print(budgets_to_table([self.budget]) + "\n")
+
+        # Display the user's account funds
+        print(FinanceDashboardPage.get_subtitle() + "\n")
+
+        while True:
+            # Get the amount of funds to remove
+            print(
+                "Please enter an amount of funds to remove or press Enter to go back:\n"
+            )
+            amount = input("Amount: ")
+            if not amount:
+                break
+
+            # Amount validation
+            amount = is_valid_number(amount)
+            if not amount:
+                print("Invalid Input!\n")
+                continue
+            if amount < 0:
+                print("Amount must be positive!\n")
+                continue
+            if amount > self.budget.balance:
+                print("Amount must not exceed the budget's current balance!\n")
+                continue
+            print()
+
+            # Request to remove funds
+            remove_funds_resp = remove_funds(self.budget, amount)
+            if not remove_funds_resp["success"]:
+                print(remove_funds_resp["error"])
+                break
+            print(remove_funds_resp["message"])
             break
 
         print("\nReturning to the previous page...")
