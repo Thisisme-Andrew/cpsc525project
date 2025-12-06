@@ -91,14 +91,13 @@ class CreateAccountPage(Page):
         from .dashboard import WelcomePage
 
         clear_screen()
-        print("Create an account:\n")
+        print("Create an account or press Enter to go back:\n")
 
         while True:
             # Get the user's email
             email = input("Email: ")
             if not email:
-                # Return to the welcome page
-                print()
+                print("Returning to the previous page...")
                 return WelcomePage()
 
             try:

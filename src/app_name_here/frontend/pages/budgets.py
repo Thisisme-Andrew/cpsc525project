@@ -17,6 +17,7 @@ from .accounts import (
 from ...database.services.finances.accounts import get_account_balance
 from ...database.services.finances.budgets import (
     add_funds,
+    create_budget,
     get_budgets,
     get_total_budgeted_funds,
     remove_funds,
@@ -76,7 +77,7 @@ class BudgetsDashboardPage(NavigationPage):
             options=OrderedDict(
                 [
                     ("Manage Budgets", ManageBudgetsPage),
-                    ("Create a Budget", None),
+                    ("Create a Budget", CreateBudgetPage),
                     ("Go Back", FinanceDashboardPage),
                 ]
             ),
@@ -115,7 +116,7 @@ class ManageBudgetsPage(Page):
             input("Press Enter to go back...")
             print("\nReturning to Budget Dashboard...")
             sleep(1)
-            return BudgetsDashboardPage
+            return BudgetsDashboardPage()
 
         # Choose a budget to manage
         budget_options = OrderedDict([(budget.name, budget) for budget in budgets])
@@ -180,13 +181,20 @@ class AddFundsPage(Page):
         # Get the user's account balance.
         account_balance_resp = get_account_balance(state.email)
         if not account_balance_resp["success"]:
-            return "Failed to load balance."
+            print(account_balance_resp["error"])
+            print("\nReturning to the previous page...")
+            sleep(1.5)
+            return ManageBudgetPage(self.budget)
         account_balance = account_balance_resp["balance"]
 
         # Get the user's total amount of budgeted funds
         total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
         if not total_budgeted_funds_resp["success"]:
-            return "Failed to load the total budgeted funds."
+            print(total_budgeted_funds_resp["error"])
+            print("\nReturning to the previous page...")
+            sleep(1.5)
+            return ManageBudgetPage(self.budget)
+        account_balance = account_balance_resp["balance"]
         total_budgeted_funds = total_budgeted_funds_resp["total"]
 
         available_account_funds = account_balance - total_budgeted_funds
@@ -291,3 +299,58 @@ class RemoveFundsPage(Page):
         print("\nReturning to the previous page...")
         sleep(1.5)
         return ManageBudgetPage(self.budget)
+
+
+class CreateBudgetPage(Page):
+    """Create budget page."""
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        clear_screen()
+        print("Create a budget or press Enter to go back:\n")
+
+        while True:
+            # Get the budget name
+            name = input("Budget name: ")
+            if not name:
+                print("Returning to the previous page...")
+                return BudgetsDashboardPage()
+
+            # Validate the name
+            if len(name) < 3:
+                print("Name must be at least 3 characters. Please try again.\n")
+                continue
+            if name.lower() == "go back":
+                print("Invalid name. Please try again.\n")
+            break
+
+        while True:
+            # Get the budget goal amount
+            goal = input("Budget goal ($): ")
+            if not goal:
+                print("Returning to the previous page...")
+                return BudgetsDashboardPage()
+
+            # Validate the goal
+            goal = is_valid_number(goal)
+            if not goal:
+                print("Invalid Input! Please try again.\n")
+                continue
+            if goal < 0:
+                print("Goal must be positive! Please try again.\n")
+                continue
+            break
+
+        # Request to create the budget
+        create_budget_resp = create_budget(state.email, name, goal)
+        if not create_budget_resp["success"]:
+            print(create_budget_resp["error"])
+        print(create_budget_resp["message"])
+
+        print("\nReturning to the previous page...")
+        sleep(1.5)
+        return BudgetsDashboardPage()
