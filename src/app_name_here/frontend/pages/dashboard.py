@@ -1,11 +1,11 @@
 from collections import OrderedDict
 from textwrap import dedent
 
-from .account import LoginPage, CreateAccountPage, LogoutPage
+from .users import LoginPage, CreateAccountPage, LogoutPage
 from .page_templates import NavigationPage
 from .settings import SettingsPage
 from .. import state
-from .finances import AddIncomePage, AddExpensePage, GetTransactionsPage
+from .accounts import AddIncomePage, AddExpensePage, GetTransactionsPage
 from ...database.services.finances.accounts import get_account_balance
 from ...database.services.finances.budgets import get_total_budgeted_funds
 

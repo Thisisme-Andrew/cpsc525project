@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from .account import ChangePasswordPage, DeleteAccountPage
+from .users import ChangePasswordPage, DeleteAccountPage
 from .page_templates import NavigationPage
 
 
