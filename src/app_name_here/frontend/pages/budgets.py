@@ -1,30 +1,24 @@
+"""Budget pages."""
+
 from collections import OrderedDict
-from textwrap import dedent
+from prettytable import PrettyTable
 from time import sleep
 
-from app_name_here.frontend.pages.dashboard import FinanceDashboardPage
-
-from .users import LoginPage, CreateAccountPage, LogoutPage
+from .accounts import is_valid_number
+from .dashboard import FinanceDashboardPage
 from .page_templates import NavigationPage, Page
-from .settings import SettingsPage
 from .. import state
-from .accounts import (
-    AddIncomePage,
-    AddExpensePage,
-    GetTransactionsPage,
-    is_valid_number,
-)
+from ..utils.utils import clear_screen, get_choice_from_options
+from ...database.models.models import Budget
 from ...database.services.finances.accounts import get_account_balance
 from ...database.services.finances.budgets import (
     add_funds,
     create_budget,
+    delete_budget,
     get_budgets,
     get_total_budgeted_funds,
     remove_funds,
 )
-from ..utils.utils import clear_screen, get_choice_from_options
-from prettytable import PrettyTable
-from ...database.models.models import Budget
 
 
 def budgets_to_table(budgets: list[Budget]) -> str:
@@ -35,11 +29,6 @@ def budgets_to_table(budgets: list[Budget]) -> str:
     :return: The string representation of a budgets table.
     :rtype: str
     """
-    # Print a message if the list of budgets is empty
-    if not budgets:
-        print("No active budgets.")
-        return
-
     # Create a table to display the budgets
     table = PrettyTable()
     table.field_names = [
@@ -54,7 +43,13 @@ def budgets_to_table(budgets: list[Budget]) -> str:
     return table.get_string()
 
 
-def display_all_budgets():
+def display_all_budgets() -> str:
+    """Displays a table for all of the user's budgets.
+
+    :raises RuntimeError: If the user's budgets can't be retrieved.
+    :return: The string representation of a budgets table.
+    :rtype: str
+    """
     # Get the user's budgets
     budgets_resp = get_budgets(state.email)
     if not budgets_resp["success"]:
@@ -113,7 +108,7 @@ class ManageBudgetsPage(Page):
 
         # Handle if the user has no budgets
         if not budgets:
-            input("Press Enter to go back...")
+            input("No budgets available. Press Enter to go back...")
             print("\nReturning to Budget Dashboard...")
             sleep(1)
             return BudgetsDashboardPage()
@@ -146,7 +141,7 @@ class ManageBudgetPage(NavigationPage):
                 [
                     ("Add Funds", AddFundsPage(budget)),
                     ("Remove Funds", RemoveFundsPage(budget)),
-                    ("Delete Budget", None),
+                    ("Delete Budget", DeleteBudgetPage(budget)),
                     ("Go Back", ManageBudgetsPage),
                 ]
             ),
@@ -174,6 +169,7 @@ class AddFundsPage(Page):
         :rtype: Page
         """
         clear_screen()
+        print("Add Funds\n")
 
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
@@ -259,6 +255,7 @@ class RemoveFundsPage(Page):
         :rtype: Page
         """
         clear_screen()
+        print("Remove Funds\n")
 
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
@@ -301,6 +298,46 @@ class RemoveFundsPage(Page):
         return ManageBudgetPage(self.budget)
 
 
+class DeleteBudgetPage(Page):
+    """Delete budget page."""
+
+    def __init__(self, budget: Budget):
+        """Constructs the page for the provided budget.
+
+        :param budget: Budget to use.
+        :type budget: Budget
+        """
+        self.budget = budget
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        clear_screen()
+        print("Delete Budget\n")
+
+        # Display a table for the budget
+        print(budgets_to_table([self.budget]) + "\n")
+
+        confirm_delete = input("Are you sure you want to delte this budget? (y or n): ")
+        if not confirm_delete.lower() in ["y", "yes"]:
+            print("Aborting...")
+            sleep(1)
+            return ManageBudgetPage(self.budget)
+
+        # Request to delete budget
+        delete_budget_resp = delete_budget(self.budget)
+        if not delete_budget_resp["success"]:
+            print(delete_budget_resp["error"])
+        print(delete_budget_resp["message"])
+
+        print("\nReturning to the previous page...")
+        sleep(1.5)
+        return BudgetsDashboardPage()
+
+
 class CreateBudgetPage(Page):
     """Create budget page."""
 
@@ -311,6 +348,8 @@ class CreateBudgetPage(Page):
         :rtype: Page
         """
         clear_screen()
+        print("Create Budget\n")
+
         print("Create a budget or press Enter to go back:\n")
 
         while True:

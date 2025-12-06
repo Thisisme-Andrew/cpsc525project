@@ -28,13 +28,32 @@ def create_budget(user_email: str, name: str, goal: Decimal) -> dict:
         return {"success": False, "error": f"Error creating budget: {str(e)}"}
 
 
-def add_funds(budget: Budget, amount: Decimal):
+def delete_budget(budget: Budget) -> dict:
+    """Request to delete a budget.
+
+    :param budget: Budget to delete.
+    :type budget: Budget
+    :return: Response object.
+    :rtype: dict
+    """
+    try:
+        db.delete(budget)
+        db.commit()
+        return {"success": True, "message": f"Budget deleted successfully."}
+    except Exception as e:
+        db.rollback()
+        return {"success": False, "error": f"Error deleting budget: {str(e)}"}
+
+
+def add_funds(budget: Budget, amount: Decimal) -> dict:
     """Request to add funds to a budget.
 
     :param budget: Budget to modify.
     :type budget: Budget
     :param amount: Amount to add.
     :type amount: Decimal
+    :return: Response object.
+    :rtype: dict
     """
     try:
         budget.balance += amount
@@ -49,13 +68,15 @@ def add_funds(budget: Budget, amount: Decimal):
         return {"success": False, "error": f"Error adding funds: {str(e)}"}
 
 
-def remove_funds(budget: Budget, amount: Decimal):
+def remove_funds(budget: Budget, amount: Decimal) -> dict:
     """Request to remove funds from a budget.
 
     :param budget: Budget to modify.
     :type budget: Budget
     :param amount: Amount to remove.
     :type amount: Decimal
+    :return: Response object.
+    :rtype: dict
     """
     try:
         budget.balance -= amount
