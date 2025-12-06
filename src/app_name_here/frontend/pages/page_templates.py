@@ -75,4 +75,6 @@ class NavigationPage(Page, ABC):
             sys.exit(0)
 
         # Return an instance of the chosen page
-        return chosen_page()
+        if isinstance(chosen_page, type):
+            return chosen_page()
+        return chosen_page

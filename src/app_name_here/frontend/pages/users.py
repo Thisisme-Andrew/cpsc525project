@@ -134,7 +134,7 @@ class CreateAccountPage(Page):
             # Success, require the user to log into their new account
             print()
             print("Please log in to continue. Redirecting...")
-            sleep(1)
+            sleep(1.5)
             return LoginPage()
 
 
@@ -188,7 +188,7 @@ class ChangePasswordPage(Page):
             # Success, return to the settings page
             print()
             print("Password changed successfully. Redirecting...")
-            sleep(1)
+            sleep(1.5)
             return SettingsPage()
 
 
@@ -235,5 +235,5 @@ class DeleteAccountPage(Page):
             state.clear()
             print()
             print("Account deleted. Redirecting...")
-            sleep(1)
+            sleep(1.5)
             return WelcomePage()
