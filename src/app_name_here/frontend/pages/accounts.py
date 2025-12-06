@@ -69,7 +69,7 @@ class GetBalancePage(Page):
                 break
 
         print("\nReturning to Finance Dashboard. Redirecting...")
-        sleep(1.5)
+        sleep(1)
         return FinanceDashboardPage()
 
 

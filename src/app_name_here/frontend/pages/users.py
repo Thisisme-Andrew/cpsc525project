@@ -56,7 +56,7 @@ class LoginPage(Page):
             # Success, update global state and redirect to the dashboard
             state.email = email
             print("\nSuccess. Redirecting...")
-            sleep(1.5)
+            sleep(1)
             return DashboardPage()
 
 
@@ -74,7 +74,7 @@ class LogoutPage(Page):
 
         print("Logging out...")
         state.clear()
-        sleep(1.5)
+        sleep(1)
         return WelcomePage()
 
 
@@ -134,7 +134,7 @@ class CreateAccountPage(Page):
             # Success, require the user to log into their new account
             print()
             print("Please log in to continue. Redirecting...")
-            sleep(1.5)
+            sleep(1)
             return LoginPage()
 
 
@@ -188,7 +188,7 @@ class ChangePasswordPage(Page):
             # Success, return to the settings page
             print()
             print("Password changed successfully. Redirecting...")
-            sleep(1.5)
+            sleep(1)
             return SettingsPage()
 
 
@@ -222,7 +222,7 @@ class DeleteAccountPage(Page):
             )
             if not confirm_delete.lower() in ["y", "yes"]:
                 print("Aborting...")
-                sleep(1.5)
+                sleep(1)
                 return SettingsPage()
 
             db_response = remove_user(state.email)
@@ -235,5 +235,5 @@ class DeleteAccountPage(Page):
             state.clear()
             print()
             print("Account deleted. Redirecting...")
-            sleep(1.5)
+            sleep(1)
             return WelcomePage()

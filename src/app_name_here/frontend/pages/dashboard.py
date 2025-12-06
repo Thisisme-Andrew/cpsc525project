@@ -54,12 +54,14 @@ class FinanceDashboardPage(NavigationPage):
         """Constructs the page."""
         # Deferred imports to avoid circular dependencies
         from .dashboard import DashboardPage
+        from .budgets import BudgetsDashboardPage
 
         super().__init__(
             options=OrderedDict(
                 [
                     ("Add Income", AddIncomePage),
                     ("Add Expense", AddExpensePage),
+                    ("Budgets Dashboard", BudgetsDashboardPage),
                     ("See Account History", GetTransactionsPage),
                     ("Go Back", DashboardPage),
                 ]
