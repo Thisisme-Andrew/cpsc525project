@@ -1,0 +1,395 @@
+"""Budget pages."""
+
+from collections import OrderedDict
+from prettytable import PrettyTable
+from time import sleep
+
+from .accounts import is_valid_number
+from .dashboard import FinanceDashboardPage
+from .page_templates import NavigationPage, Page
+from .. import state
+from ..utils.utils import clear_screen, get_choice_from_options
+from ...database.models.models import Budget
+from ...database.services.finances.accounts import get_account_balance
+from ...database.services.finances.budgets import (
+    add_funds,
+    create_budget,
+    delete_budget,
+    get_budgets,
+    get_total_budgeted_funds,
+    remove_funds,
+)
+
+
+def budgets_to_table(budgets: list[Budget]) -> str:
+    """Creates a table for displaying budgets.
+
+    :param budgets: Budgets to display.
+    :type budgets: list[Budget]
+    :return: The string representation of a budgets table.
+    :rtype: str
+    """
+    # Create a table to display the budgets
+    table = PrettyTable()
+    table.field_names = [
+        "Name",
+        "Current Balance ($)",
+        "Goal ($)",
+    ]
+    for budget in budgets:
+        table.add_row([budget.name, budget.balance, budget.goal])
+
+    # Return the table's string representation
+    return table.get_string()
+
+
+def display_all_budgets() -> str:
+    """Displays a table for all of the user's budgets.
+
+    :raises RuntimeError: If the user's budgets can't be retrieved.
+    :return: The string representation of a budgets table.
+    :rtype: str
+    """
+    # Get the user's budgets
+    budgets_resp = get_budgets(state.email)
+    if not budgets_resp["success"]:
+        raise RuntimeError(budgets_resp["error"])
+    budgets = budgets_resp["budgets"]
+
+    # Return a table for the budgets
+    return budgets_to_table(budgets)
+
+
+class BudgetsDashboardPage(NavigationPage):
+    """Budgets dashboard page."""
+
+    def __init__(self):
+        """Constructs the page."""
+        # Deferred imports to avoid circular dependencies
+        from .dashboard import FinanceDashboardPage
+
+        super().__init__(
+            options=OrderedDict(
+                [
+                    ("Manage Budgets", ManageBudgetsPage),
+                    ("Create a Budget", CreateBudgetPage),
+                    ("Go Back", FinanceDashboardPage),
+                ]
+            ),
+            title="Budgets Dashboard",
+            clear_screen=True,
+            subtitle="\n" + display_all_budgets(),
+        )
+
+
+class ManageBudgetsPage(Page):
+    """Manage budgets page."""
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        # Clear the screen.
+        clear_screen()
+
+        # Display the page title
+        print("Manage Budgets\n")
+
+        # Get the user's budgets
+        budgets_resp = get_budgets(state.email)
+        if not budgets_resp["success"]:
+            raise RuntimeError(budgets_resp["error"])
+        budgets = budgets_resp["budgets"]
+
+        # Display a table for the budgets
+        print(budgets_to_table(budgets) + "\n")
+
+        # Handle if the user has no budgets
+        if not budgets:
+            input("No budgets available. Press Enter to go back...")
+            print("\nReturning to Budget Dashboard...")
+            sleep(1)
+            return BudgetsDashboardPage()
+
+        # Choose a budget to manage
+        budget_options = OrderedDict([(budget.name, budget) for budget in budgets])
+        budget_options["Go Back"] = BudgetsDashboardPage
+        chosen_budget: Budget | BudgetsDashboardPage = get_choice_from_options(
+            budget_options, prompt="Choose a budget:"
+        )
+
+        # Handle the "Go Back" option
+        if chosen_budget is BudgetsDashboardPage:
+            return chosen_budget()
+
+        return ManageBudgetPage(chosen_budget)
+
+
+class ManageBudgetPage(NavigationPage):
+    """Manage budget page."""
+
+    def __init__(self, budget: Budget):
+        """Constructs the page for the provided budget.
+
+        :param budget: Budget to use.
+        :type budget: Budget
+        """
+        super().__init__(
+            options=OrderedDict(
+                [
+                    ("Add Funds", AddFundsPage(budget)),
+                    ("Remove Funds", RemoveFundsPage(budget)),
+                    ("Delete Budget", DeleteBudgetPage(budget)),
+                    ("Go Back", ManageBudgetsPage),
+                ]
+            ),
+            title="Manage Budget",
+            clear_screen=True,
+            subtitle="\n" + budgets_to_table([budget]),
+        )
+
+
+class AddFundsPage(Page):
+    """Page to add funds to a budget."""
+
+    def __init__(self, budget: Budget):
+        """Constructs the page for the provided budget.
+
+        :param budget: Budget to use.
+        :type budget: Budget
+        """
+        self.budget = budget
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        clear_screen()
+        print("Add Funds\n")
+
+        # Display a table for the budget
+        print(budgets_to_table([self.budget]) + "\n")
+
+        # Get the user's account balance.
+        account_balance_resp = get_account_balance(state.email)
+        if not account_balance_resp["success"]:
+            print(account_balance_resp["error"])
+            print("\nReturning to the previous page...")
+            sleep(1.5)
+            return ManageBudgetPage(self.budget)
+        account_balance = account_balance_resp["balance"]
+
+        # Get the user's total amount of budgeted funds
+        total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
+        if not total_budgeted_funds_resp["success"]:
+            print(total_budgeted_funds_resp["error"])
+            print("\nReturning to the previous page...")
+            sleep(1.5)
+            return ManageBudgetPage(self.budget)
+        account_balance = account_balance_resp["balance"]
+        total_budgeted_funds = total_budgeted_funds_resp["total"]
+
+        available_account_funds = account_balance - total_budgeted_funds
+
+        # Display the user's account funds
+        print(FinanceDashboardPage.get_subtitle() + "\n")
+
+        while True:
+            # Get the amount of funds to add
+            print("Please enter an amount of funds to add or press Enter to go back:\n")
+            amount = input("Amount: ")
+            if not amount:
+                break
+
+            # Amount validation
+            amount = is_valid_number(amount)
+            if not amount:
+                print("Invalid Input!\n")
+                continue
+            if amount < 0:
+                print("Amount must be positive!\n")
+                continue
+            if amount > available_account_funds:
+                print("Amount must not exceed your available account funds!\n")
+                continue
+            print()
+
+            # Request to add funds
+            add_funds_resp = add_funds(self.budget, amount)
+            if not add_funds_resp["success"]:
+                print(add_funds_resp["error"])
+                break
+            print(add_funds_resp["message"])
+
+            # Goal reached message
+            if self.budget.balance >= self.budget.goal:
+                print("\nCongratulations, you fulfilled your budget goal!\n")
+                input("Press Enter to continue...")
+
+            break
+
+        print("\nReturning to the previous page...")
+        sleep(1.5)
+        return ManageBudgetPage(self.budget)
+
+
+class RemoveFundsPage(Page):
+    """Page to remove funds from a budget."""
+
+    def __init__(self, budget: Budget):
+        """Constructs the page for the provided budget.
+
+        :param budget: Budget to use.
+        :type budget: Budget
+        """
+        self.budget = budget
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        clear_screen()
+        print("Remove Funds\n")
+
+        # Display a table for the budget
+        print(budgets_to_table([self.budget]) + "\n")
+
+        # Display the user's account funds
+        print(FinanceDashboardPage.get_subtitle() + "\n")
+
+        while True:
+            # Get the amount of funds to remove
+            print(
+                "Please enter an amount of funds to remove or press Enter to go back:\n"
+            )
+            amount = input("Amount: ")
+            if not amount:
+                break
+
+            # Amount validation
+            amount = is_valid_number(amount)
+            if not amount:
+                print("Invalid Input!\n")
+                continue
+            if amount < 0:
+                print("Amount must be positive!\n")
+                continue
+            if amount > self.budget.balance:
+                print("Amount must not exceed the budget's current balance!\n")
+                continue
+            print()
+
+            # Request to remove funds
+            remove_funds_resp = remove_funds(self.budget, amount)
+            if not remove_funds_resp["success"]:
+                print(remove_funds_resp["error"])
+                break
+            print(remove_funds_resp["message"])
+            break
+
+        print("\nReturning to the previous page...")
+        sleep(1.5)
+        return ManageBudgetPage(self.budget)
+
+
+class DeleteBudgetPage(Page):
+    """Delete budget page."""
+
+    def __init__(self, budget: Budget):
+        """Constructs the page for the provided budget.
+
+        :param budget: Budget to use.
+        :type budget: Budget
+        """
+        self.budget = budget
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        clear_screen()
+        print("Delete Budget\n")
+
+        # Display a table for the budget
+        print(budgets_to_table([self.budget]) + "\n")
+
+        confirm_delete = input("Are you sure you want to delte this budget? (y or n): ")
+        if not confirm_delete.lower() in ["y", "yes"]:
+            print("Aborting...")
+            sleep(1)
+            return ManageBudgetPage(self.budget)
+
+        # Request to delete budget
+        delete_budget_resp = delete_budget(self.budget)
+        if not delete_budget_resp["success"]:
+            print(delete_budget_resp["error"])
+        print(delete_budget_resp["message"])
+
+        print("\nReturning to the previous page...")
+        sleep(1.5)
+        return BudgetsDashboardPage()
+
+
+class CreateBudgetPage(Page):
+    """Create budget page."""
+
+    def run(self) -> Page:
+        """Runs the page.
+
+        :return: The next page for the app to run.
+        :rtype: Page
+        """
+        clear_screen()
+        print("Create Budget\n")
+
+        print("Create a budget or press Enter to go back:\n")
+
+        while True:
+            # Get the budget name
+            name = input("Budget name: ")
+            if not name:
+                print("Returning to the previous page...")
+                return BudgetsDashboardPage()
+
+            # Validate the name
+            if len(name) < 3:
+                print("Name must be at least 3 characters. Please try again.\n")
+                continue
+            if name.lower() == "go back":
+                print("Invalid name. Please try again.\n")
+            break
+
+        while True:
+            # Get the budget goal amount
+            goal = input("Budget goal ($): ")
+            if not goal:
+                print("Returning to the previous page...")
+                return BudgetsDashboardPage()
+
+            # Validate the goal
+            goal = is_valid_number(goal)
+            if not goal:
+                print("Invalid Input! Please try again.\n")
+                continue
+            if goal < 0:
+                print("Goal must be positive! Please try again.\n")
+                continue
+            break
+
+        # Request to create the budget
+        create_budget_resp = create_budget(state.email, name, goal)
+        if not create_budget_resp["success"]:
+            print(create_budget_resp["error"])
+        print(create_budget_resp["message"])
+
+        print("\nReturning to the previous page...")
+        sleep(1.5)
+        return BudgetsDashboardPage()

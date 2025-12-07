@@ -37,42 +37,6 @@ def is_valid_number(string_input):
     val = val.quantize(Decimal("0.01"))
     return val
 
-
-class GetBalancePage(Page):
-    """Get Balance page."""
-
-    def run(self) -> Page:
-        """Runs the page.
-
-        :return: The next page for the app to run.
-        :rtype: Page
-        """
-        # Deferred imports to avoid circular dependencies
-        from .dashboard import FinanceDashboardPage
-
-        clear_screen()
-        # print(f"email is: {state.email}")
-        while True:
-            db_response = get_account_balance(state.email)
-            if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
-                user_response = input(
-                    "Would you like to try again? (yes or any other key for no)"
-                )
-                if not user_response == "yes":
-                    break
-            else:
-                print(f"Current balance: {db_response['balance']}")
-                user_response = input(
-                    "Enter any key to return to the finance Dashbaord"
-                )
-                break
-
-        print("\nReturning to Finance Dashboard. Redirecting...")
-        sleep(1.5)
-        return FinanceDashboardPage()
-
-
 class AddIncomePage(Page):
     """Adding income page."""
 
