@@ -5,7 +5,7 @@ from .users import LoginPage, CreateAccountPage, LogoutPage
 from .page_templates import NavigationPage
 from .settings import SettingsPage
 from .. import state
-from .accounts import AddIncomePage, AddExpensePage, GetTransactionsPage
+from .accounts import AddIncomePage, AddExpensePage, GetTransactionsPage, SendMoneyPage
 from ...database.services.finances.accounts import get_account_balance
 from ...database.services.finances.budgets import get_total_budgeted_funds
 
@@ -60,6 +60,7 @@ class FinanceDashboardPage(NavigationPage):
                 [
                     ("Add Income", AddIncomePage),
                     ("Add Expense", AddExpensePage),
+                    ("Send Money", SendMoneyPage),
                     ("See Account History", GetTransactionsPage),
                     ("Go Back", DashboardPage),
                 ]
