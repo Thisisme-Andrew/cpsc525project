@@ -207,19 +207,18 @@ class DeleteUserPage(Page):
         print(f"Deleting user: {state.email}\n")
 
         while True:
-            confirm_email = input("Confirm your email: ")
-            if not confirm_email:
+            confirm = input("Confirm your email: ")
+            if not confirm:
                 # Return to the settings page
                 print()
                 return SettingsPage()
-            if confirm_email != state.email:
+            if confirm != state.email:
                 print("Incorrect email. Please try again.\n")
                 continue
 
-            confirm_delete = input(
-                "Are you sure you want to delete your account? (y or n): "
-            )
-            if not confirm_delete.lower() in ["y", "yes"]:
+            confirm = input("Are you sure you want to delete your account? (y or n): ")
+            if not confirm.lower() in ["y", "yes"]:
+                # Return to the settings page
                 print("Aborting...")
                 sleep(1)
                 return SettingsPage()

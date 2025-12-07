@@ -9,7 +9,7 @@ from ...database.services.finances.accounts import (
     get_account_transactions,
     add_income,
     add_expense,
-    send_money
+    send_money,
 )
 
 
@@ -37,6 +37,7 @@ def is_valid_number(string_input):
     # Convert to Decimal with exactly 2 decimal places
     val = val.quantize(Decimal("0.01"))
     return val
+
 
 class AddIncomePage(Page):
     """Adding income page."""
@@ -94,7 +95,7 @@ class AddIncomePage(Page):
                         else:
                             clear_screen()
 
-        print("\nReturning to Finance Dashboard. Redirecting...")
+        print("\nReturning to the Finance Dashboard...")
         sleep(1)
         return FinanceDashboardPage()
 
@@ -155,9 +156,10 @@ class AddExpensePage(Page):
                         else:
                             clear_screen()
 
-        print("\nReturning to Finance Dashboard. Redirecting...")
+        print("\nReturning to the Finance Dashboard...")
         sleep(1)
         return FinanceDashboardPage()
+
 
 class SendMoneyPage(Page):
     """Get transaction history page."""
@@ -176,10 +178,10 @@ class SendMoneyPage(Page):
         available_funds = "Unavailable"
         if db_balance_response["success"]:
             available_funds = db_balance_response["balance"]
-        
+
         print(f"Available funds: ${available_funds}")
         print("\n")
-        
+
         while True:
             print("Please enter recipient email or press Enter to go back:\n")
             recipient_email = input("Recipient email: ")
@@ -199,30 +201,35 @@ class SendMoneyPage(Page):
 
             print("Please enter a description or press Enter to cancel and go back:\n")
             description = input("Description: ")
-            verification = input(f'Send ${amount_to_send} to {recipient_email} with description: {description if description else "None"}? (yes or any other key for no):')
-            if not verification == "yes":
-                retry = input("Would you like to try again? (yes or any other key for no)")
+            confirm = input(
+                f'Send ${amount_to_send} to {recipient_email} with description: {description if description else "None"}? (y or n): '
+            )
+            if confirm not in ["y", "yes"]:
+                retry = input("Would you like to try again? (y or n): ")
                 if not retry:
                     break
                 else:
                     continue
 
-            db_response = send_money(state.email, recipient_email, amount_to_send, description)
+            db_response = send_money(
+                state.email, recipient_email, amount_to_send, description
+            )
             if not db_response["success"]:
                 print(f"Error: {db_response['error']}")
-                user_response = input(
-                    "Would you like to try again? (yes or any other key for no)"
-                )
+                user_response = input("Would you like to try again? (y or n): ")
                 if not user_response == "yes":
                     break
             else:
-                print(f"{amount_to_send} sent to {recipient_email} Successfully")
-                user_response = input("Enter any key to return to the finance Dashbaord")
+                print(f"{amount_to_send} sent to {recipient_email} successfully.")
+                user_response = input(
+                    "Press Enter to return to the finance Dashbaord: "
+                )
                 break
 
-        print("\nReturning to Finance Dashboard. Redirecting...")
+        print("\nReturning to the Finance Dashboard...")
         sleep(1)
         return FinanceDashboardPage()
+
 
 class GetTransactionsPage(Page):
     """Get transaction history page."""
@@ -241,11 +248,10 @@ class GetTransactionsPage(Page):
             db_response = get_account_transactions(state.email)
             if not db_response["success"]:
                 print(f"Error: {db_response['error']}")
-                user_response = input(
-                    "Would you like to try again? (yes or any other key for no)"
-                )
+                user_response = input("Would you like to try again? (y or n): ")
                 if not user_response == "yes":
                     break
+                continue
             else:
                 clear_screen()
                 print("Transaction history:")
@@ -265,6 +271,6 @@ class GetTransactionsPage(Page):
                 )
                 break
 
-        print("\nReturning to Finance Dashboard. Redirecting...")
+        print("\nReturning to the Finance Dashboard...")
         sleep(1)
         return FinanceDashboardPage()

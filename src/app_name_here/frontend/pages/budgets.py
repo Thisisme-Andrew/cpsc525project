@@ -109,7 +109,7 @@ class ManageBudgetsPage(Page):
         # Handle if the user has no budgets
         if not budgets:
             input("No budgets available. Press Enter to go back...")
-            print("\nReturning to Budget Dashboard...")
+            print("\nReturning to the Budget Dashboard...")
             sleep(1)
             return BudgetsDashboardPage()
 
@@ -321,8 +321,8 @@ class DeleteBudgetPage(Page):
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
 
-        confirm_delete = input("Are you sure you want to delte this budget? (y or n): ")
-        if not confirm_delete.lower() in ["y", "yes"]:
+        confirm = input("Are you sure you want to delte this budget? (y or n): ")
+        if not confirm.lower() in ["y", "yes"]:
             print("Aborting...")
             sleep(1)
             return ManageBudgetPage(self.budget)
