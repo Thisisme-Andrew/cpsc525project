@@ -3,6 +3,7 @@ General utility functions.
 """
 
 from collections import OrderedDict
+from decimal import Decimal
 import os
 from typing import Any
 
@@ -49,3 +50,33 @@ def clear_screen():
     """Clears the app's screen."""
     # Citation: https://stackoverflow.com/questions/2084508/clear-the-terminal-in-python
     os.system("cls" if os.name == "nt" else "clear")
+
+
+def str_to_decimal(str_num: str) -> Decimal | bool:
+    """Converts a string to a decimal number with exactly 2 decimal places. Returns false if the
+    conversion fails.
+
+    :param str_num: Number to convert.
+    :type str_num: str
+    :return: The number as a Decimal with exactly 2 decimal places, or False if the conversion failed.
+    :rtype: Decimal | bool
+    """
+    # Try an initial Decimal conversion
+    try:
+        val = Decimal(str_num)
+    except:
+        return False
+
+    # Check for a decimal point
+    parts = str_num.split(".")
+    if len(parts) == 2:
+        # Check for too many numbers after the decimal point
+        decimals = len(parts[1])
+        if decimals > 2:
+            return False
+    elif len(parts) > 2:
+        # Invalid input (multiple decimal points)
+        return False
+
+    # Convert to Decimal with exactly 2 decimal places
+    return val.quantize(Decimal("0.01"))

@@ -10,14 +10,14 @@ class SettingsPage(NavigationPage):
     def __init__(self):
         """Constructs the page."""
         # Deferred imports to avoid circular dependencies
-        from .dashboard import DashboardPage
+        from .main_dashboard import MainDashboardPage
 
         super().__init__(
             options=OrderedDict(
                 [
                     ("Change Password", ChangePasswordPage),
                     ("Delete Account", DeleteUserPage),
-                    ("Go Back", DashboardPage),
+                    ("Go Back", MainDashboardPage),
                 ]
             ),
             title="Settings",

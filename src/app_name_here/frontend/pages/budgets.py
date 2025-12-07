@@ -4,11 +4,10 @@ from collections import OrderedDict
 from prettytable import PrettyTable
 from time import sleep
 
-from .accounts import is_valid_number
-from .dashboard import FinanceDashboardPage
+from .accounts import FinanceAccountDashboardPage
 from .page_templates import NavigationPage, Page
 from .. import state
-from ..utils.utils import clear_screen, get_choice_from_options
+from ..utils.utils import clear_screen, get_choice_from_options, str_to_decimal
 from ...database.models.models import Budget
 from ...database.services.finances.accounts import get_account_balance
 from ...database.services.finances.budgets import (
@@ -66,14 +65,14 @@ class BudgetsDashboardPage(NavigationPage):
     def __init__(self):
         """Constructs the page."""
         # Deferred imports to avoid circular dependencies
-        from .dashboard import FinanceDashboardPage
+        from .main_dashboard import MainDashboardPage
 
         super().__init__(
             options=OrderedDict(
                 [
                     ("Manage Budgets", ManageBudgetsPage),
                     ("Create a Budget", CreateBudgetPage),
-                    ("Go Back", FinanceDashboardPage),
+                    ("Go Back", MainDashboardPage),
                 ]
             ),
             title="Budgets Dashboard",
@@ -196,7 +195,7 @@ class AddFundsPage(Page):
         available_account_funds = account_balance - total_budgeted_funds
 
         # Display the user's account funds
-        print(FinanceDashboardPage.get_subtitle() + "\n")
+        print(FinanceAccountDashboardPage.get_subtitle() + "\n")
 
         while True:
             # Get the amount of funds to add
@@ -206,7 +205,7 @@ class AddFundsPage(Page):
                 break
 
             # Amount validation
-            amount = is_valid_number(amount)
+            amount = str_to_decimal(amount)
             if not amount:
                 print("Invalid Input!\n")
                 continue
@@ -261,7 +260,7 @@ class RemoveFundsPage(Page):
         print(budgets_to_table([self.budget]) + "\n")
 
         # Display the user's account funds
-        print(FinanceDashboardPage.get_subtitle() + "\n")
+        print(FinanceAccountDashboardPage.get_subtitle() + "\n")
 
         while True:
             # Get the amount of funds to remove
@@ -273,7 +272,7 @@ class RemoveFundsPage(Page):
                 break
 
             # Amount validation
-            amount = is_valid_number(amount)
+            amount = str_to_decimal(amount)
             if not amount:
                 print("Invalid Input!\n")
                 continue
@@ -375,7 +374,7 @@ class CreateBudgetPage(Page):
                 return BudgetsDashboardPage()
 
             # Validate the goal
-            goal = is_valid_number(goal)
+            goal = str_to_decimal(goal)
             if not goal:
                 print("Invalid Input! Please try again.\n")
                 continue

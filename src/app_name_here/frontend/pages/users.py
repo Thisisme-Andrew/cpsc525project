@@ -27,7 +27,7 @@ class LoginPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import DashboardPage, WelcomePage
+        from .main_dashboard import MainDashboardPage, WelcomePage
 
         clear_screen()
         print("Log In\n")
@@ -59,7 +59,7 @@ class LoginPage(Page):
             state.email = email
             print("\nSuccess. Redirecting...")
             sleep(1)
-            return DashboardPage()
+            return MainDashboardPage()
 
 
 class LogoutPage(Page):
@@ -72,7 +72,7 @@ class LogoutPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import WelcomePage
+        from .main_dashboard import WelcomePage
 
         print("Logging out...")
         state.clear()
@@ -90,7 +90,7 @@ class CreateUserPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import WelcomePage
+        from .main_dashboard import WelcomePage
 
         clear_screen()
         print("Create User Account\n")
@@ -151,7 +151,7 @@ class ChangePasswordPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import SettingsPage
+        from .main_dashboard import SettingsPage
 
         clear_screen()
         print("Change Password\n")
@@ -207,7 +207,7 @@ class DeleteUserPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import SettingsPage, WelcomePage
+        from .main_dashboard import SettingsPage, WelcomePage
 
         clear_screen()
         print("Delete User Account\n")

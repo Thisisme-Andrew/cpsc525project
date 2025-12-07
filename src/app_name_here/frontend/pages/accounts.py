@@ -1,9 +1,12 @@
+"""Finance account pages."""
+
+from collections import OrderedDict
+from textwrap import dedent
 from time import sleep
 
-from .page_templates import Page
+from .page_templates import Page, NavigationPage
 from .. import state
-from ..utils.utils import clear_screen
-from decimal import Decimal
+from ..utils.utils import clear_screen, str_to_decimal
 from ...database.services.finances.accounts import (
     get_account_balance,
     get_account_transactions,
@@ -11,36 +14,11 @@ from ...database.services.finances.accounts import (
     add_expense,
     send_money,
 )
-
-
-# for private use
-def is_valid_number(string_input):
-    try:
-        val = Decimal(string_input)
-    except:
-        return False
-
-    # Check decimal places
-    parts = string_input.split(".")
-
-    if len(parts) == 1:
-        # integer → treat as 0 decimals
-        decimals = 0
-    elif len(parts) == 2:
-        decimals = len(parts[1])
-        if decimals > 2:
-            return False
-    else:
-        # invalid string (multiple dots)
-        return False
-
-    # Convert to Decimal with exactly 2 decimal places
-    val = val.quantize(Decimal("0.01"))
-    return val
+from ...database.services.finances.budgets import get_total_budgeted_funds
 
 
 class AddIncomePage(Page):
-    """Adding income page."""
+    """Add income page."""
 
     def run(self) -> Page:
         """Runs the page.
@@ -48,10 +26,8 @@ class AddIncomePage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
-        # Deferred imports to avoid circular dependencies
-        from .dashboard import FinanceDashboardPage
-
         clear_screen()
+        print("Add Income\n")
 
         while True:
             print("Please enter income amount or press Enter to go back:\n")
@@ -60,7 +36,7 @@ class AddIncomePage(Page):
             if not income:
                 break
 
-            income = is_valid_number(income)
+            income = str_to_decimal(income)
             if not income:
                 print("Invalid Input!\n")
                 continue
@@ -95,13 +71,13 @@ class AddIncomePage(Page):
                         else:
                             clear_screen()
 
-        print("\nReturning to the Finance Dashboard...")
+        print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
-        return FinanceDashboardPage()
+        return FinanceAccountDashboardPage()
 
 
 class AddExpensePage(Page):
-    """Adding expense page."""
+    """Add expense page."""
 
     def run(self) -> Page:
         """Runs the page.
@@ -109,10 +85,8 @@ class AddExpensePage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
-        # Deferred imports to avoid circular dependencies
-        from .dashboard import FinanceDashboardPage
-
         clear_screen()
+        print("Add Expense\n")
 
         while True:
             print("Please enter expense amount or press Enter to go back:\n")
@@ -121,7 +95,7 @@ class AddExpensePage(Page):
             if not expense:
                 break
 
-            expense = is_valid_number(expense)
+            expense = str_to_decimal(expense)
             if not expense:
                 print("Invalid Input!\n")
                 continue
@@ -156,13 +130,13 @@ class AddExpensePage(Page):
                         else:
                             clear_screen()
 
-        print("\nReturning to the Finance Dashboard...")
+        print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
-        return FinanceDashboardPage()
+        return FinanceAccountDashboardPage()
 
 
 class SendMoneyPage(Page):
-    """Get transaction history page."""
+    """Send money page."""
 
     def run(self) -> Page:
         """Runs the page.
@@ -170,17 +144,15 @@ class SendMoneyPage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
-        # Deferred imports to avoid circular dependencies
-        from .dashboard import FinanceDashboardPage
-
         clear_screen()
+        print("Send Money\n")
+
         db_balance_response = get_account_balance(state.email)
         available_funds = "Unavailable"
         if db_balance_response["success"]:
             available_funds = db_balance_response["balance"]
 
-        print(f"Available funds: ${available_funds}")
-        print("\n")
+        print(f"Available funds: ${available_funds}\n")
 
         while True:
             print("Please enter recipient email or press Enter to go back:\n")
@@ -191,7 +163,7 @@ class SendMoneyPage(Page):
             while True:
                 print("Please enter amount to send:\n")
                 amount_to_send = input("Amount to send: ")
-                amount_to_send = is_valid_number(amount_to_send)
+                amount_to_send = str_to_decimal(amount_to_send)
                 if not amount_to_send:
                     print("Invalid amount!\n")
                 elif amount_to_send < 0:
@@ -226,13 +198,13 @@ class SendMoneyPage(Page):
                 )
                 break
 
-        print("\nReturning to the Finance Dashboard...")
+        print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
-        return FinanceDashboardPage()
+        return FinanceAccountDashboardPage()
 
 
-class GetTransactionsPage(Page):
-    """Get transaction history page."""
+class AccountHistoryPage(Page):
+    """Account history page."""
 
     def run(self) -> Page:
         """Runs the page.
@@ -240,10 +212,9 @@ class GetTransactionsPage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
-        # Deferred imports to avoid circular dependencies
-        from .dashboard import FinanceDashboardPage
-
         clear_screen()
+        print("Account History\n")
+
         while True:
             db_response = get_account_transactions(state.email)
             if not db_response["success"]:
@@ -271,6 +242,56 @@ class GetTransactionsPage(Page):
                 )
                 break
 
-        print("\nReturning to the Finance Dashboard...")
+        print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
-        return FinanceDashboardPage()
+        return FinanceAccountDashboardPage()
+
+
+class FinanceAccountDashboardPage(NavigationPage):
+    """Finance account dashboard page."""
+
+    def __init__(self):
+        """Constructs the page."""
+        # Deferred imports to avoid circular dependencies
+        from .main_dashboard import MainDashboardPage
+
+        super().__init__(
+            options=OrderedDict(
+                [
+                    ("Add Income", AddIncomePage),
+                    ("Add Expense", AddExpensePage),
+                    ("Send Money", SendMoneyPage),
+                    ("Account History", AccountHistoryPage),
+                    ("Go Back", MainDashboardPage),
+                ]
+            ),
+            title="Finance Account Dashboard",
+            clear_screen=True,
+            subtitle="\n" + self.get_subtitle(),
+        )
+
+    @staticmethod
+    def get_subtitle() -> str:
+        """Gets the page's subtitle.
+
+        :return: Page subtitle.
+        :rtype: str
+        """
+        # Get the user's account balance.
+        balance_resp = get_account_balance(state.email)
+        if not balance_resp["success"]:
+            return "Failed to load balance."
+        balance = balance_resp["balance"]
+
+        # Get the user's total amount of budgeted funds
+        total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
+        if not total_budgeted_funds_resp["success"]:
+            return "Failed to load the total budgeted funds."
+        total_budgeted_funds = total_budgeted_funds_resp["total"]
+
+        return dedent(
+            f"""\
+            Account total: ${balance}
+            Budgeted funds: ${total_budgeted_funds}
+            Available funds: ${balance - total_budgeted_funds}"""
+        )
