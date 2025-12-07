@@ -19,11 +19,12 @@ class WelcomePage(NavigationPage):
             options=OrderedDict(
                 [
                     ("Log In", LoginPage),
-                    ("Create an Account", CreateUserPage),
+                    ("Create a User Account", CreateUserPage),
                     ("Exit", None),
                 ]
             ),
-            title="Welcome to <TODO-App-Name>!",
+            title="Welcome to Budget Hacker!",
+            subtitle="\nTake greater control over your finances with a personal budget tracker!",
             clear_screen=True,
         )
 
@@ -42,7 +43,7 @@ class DashboardPage(NavigationPage):
                     ("Exit", None),
                 ]
             ),
-            title="<TODO-App-Name> Dashboard",
+            title="Budget Hacker Dashboard",
             clear_screen=True,
         )
 
