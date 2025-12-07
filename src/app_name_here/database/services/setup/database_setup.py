@@ -8,6 +8,7 @@ from ..finances.budgets import create_budget
 from .... import db, engine
 from ...models.models import Base, User
 from ..users.users_services import create_user
+from ..finances.accounts import add_income
 
 DEFAULT_USERS = [
     User(
@@ -36,5 +37,6 @@ def run_db_setup():
         create_user(user.email, user.password)
         create_budget(user.email, "Car", Decimal(10000))
 
+    add_income("alice@gmail.com", 12345, "Initial Amount")
     # Commit all changes to the database.
     db.commit()
