@@ -23,7 +23,7 @@ def create_account(email):
     try:
         db.add(account)
         db.commit()
-        return {"success": True, "message": "Account added succesfully."}
+        return {"success": True, "message": "Account created succesfully."}
     except Exception as e:
         db.rollback()
         return {"success": False, "error": f"Error creating account: {str(e)}"}

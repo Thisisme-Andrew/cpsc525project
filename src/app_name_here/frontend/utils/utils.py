@@ -7,7 +7,7 @@ import os
 from typing import Any
 
 
-def get_choice_from_options(options: OrderedDict) -> Any:
+def get_choice_from_options(options: OrderedDict, prompt="Choose an option:") -> Any:
     """Displays and gets a chosen value from the provided options.
 
     :param options: Ordered dictionary of the available option names and their values.
@@ -16,7 +16,9 @@ def get_choice_from_options(options: OrderedDict) -> Any:
     :rtype: typing.Any
     """
     while True:
-        print("Choose an option:")
+        # Print the options prompt
+        if prompt:
+            print(prompt)
 
         # Parse and display the options in a numbered form.
         for i, name in enumerate(options.keys()):

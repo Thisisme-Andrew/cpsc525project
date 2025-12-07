@@ -56,7 +56,7 @@ class LoginPage(Page):
             # Success, update global state and redirect to the dashboard
             state.email = email
             print("\nSuccess. Redirecting...")
-            sleep(1.5)
+            sleep(1)
             return DashboardPage()
 
 
@@ -74,12 +74,12 @@ class LogoutPage(Page):
 
         print("Logging out...")
         state.clear()
-        sleep(1.5)
+        sleep(1)
         return WelcomePage()
 
 
-class CreateAccountPage(Page):
-    """Create account page."""
+class CreateUserPage(Page):
+    """Create user page."""
 
     def run(self) -> Page:
         """Runs the page.
@@ -91,14 +91,13 @@ class CreateAccountPage(Page):
         from .dashboard import WelcomePage
 
         clear_screen()
-        print("Create an account:\n")
+        print("Create an account or press Enter to go back:\n")
 
         while True:
             # Get the user's email
             email = input("Email: ")
             if not email:
-                # Return to the welcome page
-                print()
+                print("Returning to the previous page...")
                 return WelcomePage()
 
             try:
@@ -131,7 +130,7 @@ class CreateAccountPage(Page):
                 print(f"Error: {db_response['error']}")
                 continue
 
-            # Success, require the user to log into their new account
+            # Success, require the user to log into their login info
             print()
             print("Please log in to continue. Redirecting...")
             sleep(1.5)
@@ -192,8 +191,8 @@ class ChangePasswordPage(Page):
             return SettingsPage()
 
 
-class DeleteAccountPage(Page):
-    """Delete account page."""
+class DeleteUserPage(Page):
+    """Delete user page."""
 
     def run(self) -> Page:
         """Runs the page.
@@ -222,11 +221,11 @@ class DeleteAccountPage(Page):
             )
             if not confirm_delete.lower() in ["y", "yes"]:
                 print("Aborting...")
-                sleep(1.5)
+                sleep(1)
                 return SettingsPage()
 
             db_response = remove_user(state.email)
-            # Perform the account deletion
+            # Perform the user deletion
             if not db_response["success"]:
                 print(f"Error: {db_response['error']}")
                 continue

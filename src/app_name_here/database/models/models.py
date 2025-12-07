@@ -62,8 +62,8 @@ class Budget(Base):
 
     user_email: Mapped[str] = mapped_column(ForeignKey("user.email"), primary_key=True)
     name: Mapped[str] = mapped_column(String(100), primary_key=True)
-    # Max of $99,999,999.99 for goal and balance
-    goal: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    # Max of $99,999,999.99 for balance and goal
     balance: Mapped[Decimal] = mapped_column(Numeric(10, 2))
+    goal: Mapped[Decimal] = mapped_column(Numeric(10, 2))
 
     user: Mapped[User] = relationship("User", back_populates="budgets")
