@@ -78,8 +78,8 @@ class LogoutPage(Page):
         return WelcomePage()
 
 
-class CreateAccountPage(Page):
-    """Create account page."""
+class CreateUserPage(Page):
+    """Create user page."""
 
     def run(self) -> Page:
         """Runs the page.
@@ -130,7 +130,7 @@ class CreateAccountPage(Page):
                 print(f"Error: {db_response['error']}")
                 continue
 
-            # Success, require the user to log into their new account
+            # Success, require the user to log into their login info
             print()
             print("Please log in to continue. Redirecting...")
             sleep(1.5)
@@ -191,8 +191,8 @@ class ChangePasswordPage(Page):
             return SettingsPage()
 
 
-class DeleteAccountPage(Page):
-    """Delete account page."""
+class DeleteUserPage(Page):
+    """Delete user page."""
 
     def run(self) -> Page:
         """Runs the page.
@@ -225,7 +225,7 @@ class DeleteAccountPage(Page):
                 return SettingsPage()
 
             db_response = remove_user(state.email)
-            # Perform the account deletion
+            # Perform the user deletion
             if not db_response["success"]:
                 print(f"Error: {db_response['error']}")
                 continue
