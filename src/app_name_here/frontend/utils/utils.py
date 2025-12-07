@@ -5,7 +5,12 @@ General utility functions.
 from collections import OrderedDict
 from decimal import Decimal
 import os
+from textwrap import dedent
 from typing import Any
+
+from app_name_here.database.services.finances.accounts import get_account_balance
+from app_name_here.database.services.finances.budgets import get_total_budgeted_funds
+from .. import state
 
 
 def get_choice_from_options(options: OrderedDict, prompt="Choose an option:") -> Any:
@@ -80,3 +85,29 @@ def str_to_decimal(str_num: str) -> Decimal | bool:
 
     # Convert to Decimal with exactly 2 decimal places
     return val.quantize(Decimal("0.01"))
+
+
+def get_account_and_budget_funds_report() -> str:
+    """Gets a report of the user's finance account total, budgeted funds, and available funds.
+
+    :return: Finance account and budget report.
+    :rtype: str
+    """
+    # Get the user's account balance.
+    balance_resp = get_account_balance(state.email)
+    if not balance_resp["success"]:
+        return "Failed to load the account balance."
+    balance = balance_resp["balance"]
+
+    # Get the user's total amount of budgeted funds
+    total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
+    if not total_budgeted_funds_resp["success"]:
+        return "Failed to load the total budgeted funds."
+    total_budgeted_funds = total_budgeted_funds_resp["total"]
+
+    return dedent(
+        f"""\
+            Account total: ${balance}
+            Budgeted funds: ${total_budgeted_funds}
+            Available funds: ${balance - total_budgeted_funds}"""
+    )

@@ -4,12 +4,19 @@ from collections import OrderedDict
 from prettytable import PrettyTable
 from time import sleep
 
-from .accounts import FinanceAccountDashboardPage
 from .page_templates import NavigationPage, Page
 from .. import state
-from ..utils.utils import clear_screen, get_choice_from_options, str_to_decimal
+from ..utils.utils import (
+    clear_screen,
+    get_account_and_budget_funds_report,
+    get_choice_from_options,
+    str_to_decimal,
+)
 from ...database.models.models import Budget
-from ...database.services.finances.accounts import get_account_balance
+from ...database.services.finances.accounts import (
+    get_account_balance,
+    get_available_account_funds,
+)
 from ...database.services.finances.budgets import (
     add_funds,
     create_budget,
@@ -173,29 +180,16 @@ class AddFundsPage(Page):
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
 
-        # Get the user's account balance.
-        account_balance_resp = get_account_balance(state.email)
-        if not account_balance_resp["success"]:
-            print(account_balance_resp["error"])
-            print("\nReturning to the previous page...")
-            sleep(1.5)
+        # Get the user's available account funds
+        available_account_funds_resp = get_available_account_funds(state.email)
+        if not available_account_funds_resp["success"]:
+            print(available_account_funds_resp["error"] + "\n")
+            input("Press Enter to return to the previous page...")
             return ManageBudgetPage(self.budget)
-        account_balance = account_balance_resp["balance"]
-
-        # Get the user's total amount of budgeted funds
-        total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
-        if not total_budgeted_funds_resp["success"]:
-            print(total_budgeted_funds_resp["error"])
-            print("\nReturning to the previous page...")
-            sleep(1.5)
-            return ManageBudgetPage(self.budget)
-        account_balance = account_balance_resp["balance"]
-        total_budgeted_funds = total_budgeted_funds_resp["total"]
-
-        available_account_funds = account_balance - total_budgeted_funds
+        available_account_funds = available_account_funds_resp["availableFunds"]
 
         # Display the user's account funds
-        print(FinanceAccountDashboardPage.get_subtitle() + "\n")
+        print(get_account_and_budget_funds_report() + "\n")
 
         while True:
             # Get the amount of funds to add
@@ -220,8 +214,9 @@ class AddFundsPage(Page):
             # Request to add funds
             add_funds_resp = add_funds(self.budget, amount)
             if not add_funds_resp["success"]:
-                print(add_funds_resp["error"])
-                break
+                print(add_funds_resp["error"] + "\n")
+                input("Press Enter to return to the previous page...")
+                return ManageBudgetPage(self.budget)
             print(add_funds_resp["message"])
 
             # Goal reached message
@@ -260,7 +255,7 @@ class RemoveFundsPage(Page):
         print(budgets_to_table([self.budget]) + "\n")
 
         # Display the user's account funds
-        print(FinanceAccountDashboardPage.get_subtitle() + "\n")
+        print(get_account_and_budget_funds_report() + "\n")
 
         while True:
             # Get the amount of funds to remove
@@ -287,8 +282,9 @@ class RemoveFundsPage(Page):
             # Request to remove funds
             remove_funds_resp = remove_funds(self.budget, amount)
             if not remove_funds_resp["success"]:
-                print(remove_funds_resp["error"])
-                break
+                print(remove_funds_resp["error"] + "\n")
+                input("Press Enter to return to the previous page...")
+                return ManageBudgetPage(self.budget)
             print(remove_funds_resp["message"])
             break
 

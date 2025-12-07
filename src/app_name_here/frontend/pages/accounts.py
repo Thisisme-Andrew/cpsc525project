@@ -1,20 +1,46 @@
 """Finance account pages."""
 
 from collections import OrderedDict
-from textwrap import dedent
+from email_validator import validate_email, EmailNotValidError
 from time import sleep
 
 from .page_templates import Page, NavigationPage
 from .. import state
-from ..utils.utils import clear_screen, str_to_decimal
+from ..utils.utils import (
+    clear_screen,
+    get_account_and_budget_funds_report,
+    str_to_decimal,
+)
 from ...database.services.finances.accounts import (
-    get_account_balance,
     get_account_transactions,
     add_income,
     add_expense,
     send_money,
 )
-from ...database.services.finances.budgets import get_total_budgeted_funds
+
+
+class FinanceAccountDashboardPage(NavigationPage):
+    """Finance account dashboard page."""
+
+    def __init__(self):
+        """Constructs the page."""
+        # Deferred imports to avoid circular dependencies
+        from .main_dashboard import MainDashboardPage
+
+        super().__init__(
+            options=OrderedDict(
+                [
+                    ("Add Income", AddIncomePage),
+                    ("Add Expense", AddExpensePage),
+                    ("Send Money", SendMoneyPage),
+                    ("Account History", AccountHistoryPage),
+                    ("Go Back", MainDashboardPage),
+                ]
+            ),
+            title="Finance Account Dashboard",
+            clear_screen=True,
+            subtitle="\n" + get_account_and_budget_funds_report(),
+        )
 
 
 class AddIncomePage(Page):
@@ -43,33 +69,32 @@ class AddIncomePage(Page):
             elif income < 0:
                 print("Amount must be positive!\n")
                 continue
+            print(
+                "\nPlease enter a description or press Enter to cancel and go back:\n"
+            )
+            description = input("Description: ")
+            if not description:
+                break
             else:
-                print(
-                    "Please enter a description or press Enter to cancel and go back:\n"
-                )
-                description = input("Description: ")
-                if not description:
-                    break
-                else:
-                    db_response = add_income(state.email, income, description)
-                    if not db_response["success"]:
-                        print(f"Error: {db_response['error']}")
-                        user_response = input("Would you like to try again? (y or n): ")
-                        if user_response in ["y", "yes"]:
-                            clear_screen()
-                            continue
-                        else:
-                            break
+                db_response = add_income(state.email, income, description)
+                if not db_response["success"]:
+                    print(db_response["error"] + "\n")
+                    user_response = input("Would you like to try again? (y or n): ")
+                    if user_response in ["y", "yes"]:
+                        clear_screen()
+                        continue
                     else:
-                        print("Income added Successfully")
-                        print(
-                            f"Balance updated from {db_response['updatedBalance'] - income} to {db_response['updatedBalance']}"
-                        )
-                        user_response = input("Add more income? (y or n): ")
-                        if user_response not in ["y", "yes"]:
-                            break
-                        else:
-                            clear_screen()
+                        break
+                else:
+                    print("Income added Successfully")
+                    print(
+                        f"Balance updated from {db_response['updatedBalance'] - income} to {db_response['updatedBalance']}"
+                    )
+                    user_response = input("Add more income? (y or n): ")
+                    if user_response not in ["y", "yes"]:
+                        break
+                    else:
+                        clear_screen()
 
         print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
@@ -102,33 +127,32 @@ class AddExpensePage(Page):
             elif expense < 0:
                 print("Amount must be positive!\n")
                 continue
+            print(
+                "\nPlease enter a description or press Enter to cancel and go back:\n"
+            )
+            description = input("Description: ")
+            if not description:
+                break
             else:
-                print(
-                    "Please enter a description or press Enter to cancel and go back:\n"
-                )
-                description = input("Description: ")
-                if not description:
-                    break
-                else:
-                    db_response = add_expense(state.email, expense, description)
-                    if not db_response["success"]:
-                        print(f"Error: {db_response['error']}")
-                        user_response = input("Would you like to try again? (y or n): ")
-                        if user_response in ["y", "yes"]:
-                            clear_screen()
-                            continue
-                        else:
-                            break
+                db_response = add_expense(state.email, expense, description)
+                if not db_response["success"]:
+                    print(f"Error: {db_response['error']}")
+                    user_response = input("Would you like to try again? (y or n): ")
+                    if user_response in ["y", "yes"]:
+                        clear_screen()
+                        continue
                     else:
-                        print("Expense added Successfully")
-                        print(
-                            f"Balance updated from {db_response['updatedBalance'] + expense} to {db_response['updatedBalance']}"
-                        )
-                        user_response = input("Add another expense? (y or n): ")
-                        if user_response not in ["y", "yes"]:
-                            break
-                        else:
-                            clear_screen()
+                        break
+                else:
+                    print("Expense added Successfully")
+                    print(
+                        f"Balance updated from {db_response['updatedBalance'] + expense} to {db_response['updatedBalance']}"
+                    )
+                    user_response = input("Add another expense? (y or n): ")
+                    if user_response not in ["y", "yes"]:
+                        break
+                    else:
+                        clear_screen()
 
         print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
@@ -147,18 +171,20 @@ class SendMoneyPage(Page):
         clear_screen()
         print("Send Money\n")
 
-        db_balance_response = get_account_balance(state.email)
-        available_funds = "Unavailable"
-        if db_balance_response["success"]:
-            available_funds = db_balance_response["balance"]
-
-        print(f"Available funds: ${available_funds}\n")
+        # Display the user's account funds
+        print(get_account_and_budget_funds_report() + "\n")
 
         while True:
             print("Please enter recipient email or press Enter to go back:\n")
             recipient_email = input("Recipient email: ")
             if not recipient_email:
                 break
+            try:
+                validate_email(recipient_email)
+            except EmailNotValidError:
+                print("Invalid email format. Please try again.\n")
+                continue
+            print()
 
             while True:
                 print("Please enter amount to send:\n")
@@ -168,35 +194,37 @@ class SendMoneyPage(Page):
                     print("Invalid amount!\n")
                 elif amount_to_send < 0:
                     print("Amount must be positive!\n")
-                else:
-                    break
+                print()
+                break
 
             print("Please enter a description or press Enter to cancel and go back:\n")
             description = input("Description: ")
+            print()
             confirm = input(
                 f'Send ${amount_to_send} to {recipient_email} with description: {description if description else "None"}? (y or n): '
             )
             if confirm not in ["y", "yes"]:
                 retry = input("Would you like to try again? (y or n): ")
-                if not retry:
+                print()
+                if retry not in ["y", "yes"]:
                     break
-                else:
-                    continue
+                continue
+            print()
 
             db_response = send_money(
                 state.email, recipient_email, amount_to_send, description
             )
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
-                user_response = input("Would you like to try again? (y or n): ")
-                if not user_response == "yes":
+                print(db_response["error"] + "\n")
+                retry = input("Would you like to try again? (y or n): ")
+                print()
+                if retry not in ["y", "yes"]:
                     break
-            else:
-                print(f"{amount_to_send} sent to {recipient_email} successfully.")
-                user_response = input(
-                    "Press Enter to return to the finance Dashbaord: "
-                )
-                break
+                continue
+
+            print(f"{amount_to_send} sent to {recipient_email} successfully.\n")
+            input("Press Enter to return to the previous page...")
+            return FinanceAccountDashboardPage()
 
         print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
@@ -245,53 +273,3 @@ class AccountHistoryPage(Page):
         print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
         return FinanceAccountDashboardPage()
-
-
-class FinanceAccountDashboardPage(NavigationPage):
-    """Finance account dashboard page."""
-
-    def __init__(self):
-        """Constructs the page."""
-        # Deferred imports to avoid circular dependencies
-        from .main_dashboard import MainDashboardPage
-
-        super().__init__(
-            options=OrderedDict(
-                [
-                    ("Add Income", AddIncomePage),
-                    ("Add Expense", AddExpensePage),
-                    ("Send Money", SendMoneyPage),
-                    ("Account History", AccountHistoryPage),
-                    ("Go Back", MainDashboardPage),
-                ]
-            ),
-            title="Finance Account Dashboard",
-            clear_screen=True,
-            subtitle="\n" + self.get_subtitle(),
-        )
-
-    @staticmethod
-    def get_subtitle() -> str:
-        """Gets the page's subtitle.
-
-        :return: Page subtitle.
-        :rtype: str
-        """
-        # Get the user's account balance.
-        balance_resp = get_account_balance(state.email)
-        if not balance_resp["success"]:
-            return "Failed to load balance."
-        balance = balance_resp["balance"]
-
-        # Get the user's total amount of budgeted funds
-        total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
-        if not total_budgeted_funds_resp["success"]:
-            return "Failed to load the total budgeted funds."
-        total_budgeted_funds = total_budgeted_funds_resp["total"]
-
-        return dedent(
-            f"""\
-            Account total: ${balance}
-            Budgeted funds: ${total_budgeted_funds}
-            Available funds: ${balance - total_budgeted_funds}"""
-        )

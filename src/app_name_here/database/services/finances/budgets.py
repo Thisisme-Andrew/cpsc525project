@@ -91,7 +91,7 @@ def remove_funds(budget: Budget, amount: Decimal) -> dict:
         return {"success": False, "error": f"Error removing funds: {str(e)}"}
 
 
-def _get_budgets(email: str) -> list[Budget]:
+def _get_budgets(user_email: str) -> list[Budget]:
     """Gets all of a user's budgets.
 
     :param email: User email.
@@ -99,10 +99,10 @@ def _get_budgets(email: str) -> list[Budget]:
     :return: The user's budgets.
     :rtype: list[Budget]
     """
-    return get_user(email).budgets
+    return get_user(user_email).budgets
 
 
-def get_budgets(email: str) -> dict:
+def get_budgets(user_email: str) -> dict:
     """Request to get all of a user's budgets.
 
     :param email: User email.
@@ -111,7 +111,7 @@ def get_budgets(email: str) -> dict:
     :rtype: dict
     """
     try:
-        budgets = _get_budgets(email)
+        budgets = _get_budgets(user_email)
         return {
             "success": True,
             "message": "Budgets retrieved succesfully.",
@@ -121,7 +121,27 @@ def get_budgets(email: str) -> dict:
         return {"success": False, "error": f"Error retreiving budgets: {str(e)}"}
 
 
-def get_total_budgeted_funds(email: str) -> dict:
+def _get_total_budgeted_funds(user_email: str) -> Decimal:
+    """Get a user's total budgeted funds.
+
+    :param email: User email.
+    :type email: str
+    :return: The user's total budgeted funds.
+    :rtype: Decimal
+    """
+    # Get the user's budgets
+    budgets: list[Budget] = _get_budgets(user_email)
+
+    # Calculate the total amount of all budgets
+    total = Decimal(0)
+    for budget in budgets:
+        total += budget.balance
+
+    # Return the total
+    return total
+
+
+def get_total_budgeted_funds(user_email: str) -> dict:
     """Request to get a user's total budgeted funds.
 
     :param email: User email.
@@ -130,13 +150,7 @@ def get_total_budgeted_funds(email: str) -> dict:
     :rtype: dict
     """
     try:
-        budgets: list[Budget] = _get_budgets(email)
-
-        # Calculate the total amount of all budgets
-        total = Decimal(0)
-        for budget in budgets:
-            total += budget.balance
-
+        total = _get_total_budgeted_funds(user_email)
         return {
             "success": True,
             "message": "Total budgeted funds retrieved successfully.",
