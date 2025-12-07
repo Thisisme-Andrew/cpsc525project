@@ -1,6 +1,6 @@
 from collections import OrderedDict
 
-from .users import ChangePasswordPage, DeleteAccountPage
+from .users import ChangePasswordPage, DeleteUserPage
 from .page_templates import NavigationPage
 
 
@@ -16,7 +16,7 @@ class SettingsPage(NavigationPage):
             options=OrderedDict(
                 [
                     ("Change Password", ChangePasswordPage),
-                    ("Delete Account", DeleteAccountPage),
+                    ("Delete Account", DeleteUserPage),
                     ("Go Back", DashboardPage),
                 ]
             ),

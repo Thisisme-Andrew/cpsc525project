@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from textwrap import dedent
 
-from .users import LoginPage, CreateAccountPage, LogoutPage
+from .users import LoginPage, CreateUserPage, LogoutPage
 from .page_templates import NavigationPage
 from .settings import SettingsPage
 from .. import state
@@ -19,7 +19,7 @@ class WelcomePage(NavigationPage):
             options=OrderedDict(
                 [
                     ("Log In", LoginPage),
-                    ("Create an Account", CreateAccountPage),
+                    ("Create an Account", CreateUserPage),
                     ("Exit", None),
                 ]
             ),
