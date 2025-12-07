@@ -1,13 +1,13 @@
 """Database services for budgets."""
 
 from decimal import Decimal
-from ..users.users_services import get_user
+from ..users.users import get_user
 from ...models.models import Budget
 from .... import db
 
 
 def create_budget(user_email: str, name: str, goal: Decimal) -> dict:
-    """Creates and adds a budget to the database.
+    """Request to create and add a budget to the database.
 
     :param user_email: User email.
     :type user_email: str

@@ -12,7 +12,7 @@ from ..utils.utils import (
     str_to_decimal,
 )
 from ...database.services.finances.accounts import (
-    get_account_transactions,
+    get_transactions,
     add_income,
     add_expense,
     send_money,
@@ -244,7 +244,7 @@ class AccountHistoryPage(Page):
         print("Account History\n")
 
         while True:
-            db_response = get_account_transactions(state.email)
+            db_response = get_transactions(state.email)
             if not db_response["success"]:
                 print(f"Error: {db_response['error']}")
                 user_response = input("Would you like to try again? (y or n): ")

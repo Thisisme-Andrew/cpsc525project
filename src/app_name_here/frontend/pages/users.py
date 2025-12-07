@@ -6,7 +6,7 @@ from time import sleep
 from .page_templates import Page
 from .. import state
 from ..utils.utils import clear_screen
-from ...database.services.users.users_services import (
+from ...database.services.users.users import (
     create_user,
     login,
     change_password,

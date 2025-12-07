@@ -28,12 +28,12 @@ def login(email, password):
 # public use
 def create_user(email, password):
     # Deferred imports to avoid circular dependencies
-    from ..finances.accounts import create_account
+    from ..finances.accounts import _create_account
 
     user = User(email=email, password=password)
     try:
         db.add(user)
-        create_account(email)
+        _create_account(email)
         db.commit()
         return {"success": True, "message": f"User created successfully: {email}."}
     except Exception as e:

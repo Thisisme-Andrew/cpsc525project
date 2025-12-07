@@ -1,27 +1,21 @@
 """Database services for finance accounts."""
 
 from decimal import Decimal
-from tracemalloc import start
 from .budgets import _get_total_budgeted_funds
 from .constants import TransactionType, MAX_BALANCE
-from ..users.users_services import get_user
+from ..users.users import get_user
 from ...models.models import Transaction, Account
 from .... import db
 
 
-# returns account (success) or None (failed)
-# private use
-def _get_account(user_email):
-    account = get_user(user_email).account
-    if account:
-        return account
-    else:
-        raise Exception("Account not found")
+def _create_account(user_email: str):
+    """Create a finance account for the user.
 
-
-# returns True (success) or None (failed)
-# public use
-def create_account(user_email):
+    :param user_email: User email.
+    :type user_email: str
+    :return: True if success, false otherwise.
+    :rtype: bool
+    """
     account = Account(user_email=user_email, balance=0.00)
     try:
         db.add(account)
@@ -32,34 +26,54 @@ def create_account(user_email):
         return {"success": False, "error": f"Error creating account: {str(e)}"}
 
 
-# returns account (success) or None (failed)
-# public use
-def get_account(user_email):
+def _get_account(user_email: str) -> Account:
+    """Gets a user's account.
+
+    :param user_email: User email.
+    :type user_email: str
+    :return: The user's account.
+    :rtype: Account
+    """
+    account = get_user(user_email).account
+    if not account:
+        raise Exception("Account not found")
+    return account
+
+
+def get_account(user_email: str) -> dict:
+    """Request to get a user's account.
+
+    :param user_email: User email.
+    :type user_email: str
+    :return: Reqponse object.
+    :rtype: dict
+    """
     try:
         account = _get_account(user_email)
-        if account:
-            return {
-                "success": True,
-                "message": "Account retrieved succesfully.",
-                "account": account,
-            }
-        else:
-            return {"success": False, "error": "Account not found."}
+        return {
+            "success": True,
+            "message": "Account retrieved succesfully.",
+            "account": account,
+        }
     except Exception as e:
         return {"success": False, "error": f"Error retreiving account: {str(e)}"}
 
 
-# returns account balance (success) or None (failed)
-# public use
-def get_account_balance(user_email):
+def get_account_balance(user_email: str) -> dict:
+    """Request to get a user's account balance.
+
+    :param user_email: User email
+    :type user_email: str
+    :return: Response object.
+    :rtype: dict
+    """
     try:
         account = _get_account(user_email)
-        if account:
-            return {
-                "success": True,
-                "message": "Account balance retrieved succesfully.",
-                "balance": account.balance,
-            }
+        return {
+            "success": True,
+            "message": "Account balance retrieved succesfully.",
+            "balance": account.balance,
+        }
     except Exception as e:
         db.rollback()
         return {"success": False, "error": f"Error retreiving balance: {str(e)}"}
@@ -102,17 +116,21 @@ def get_available_account_funds(user_email: str) -> dict:
         }
 
 
-# returns account transactions (success) or None (failed)
-# public use
-def get_account_transactions(user_email):
+def get_transactions(user_email: str) -> dict:
+    """Request to get a user's transactions.
+
+    :param user_email: User email.
+    :type user_email: str
+    :return: Response object.
+    :rtype: dict
+    """
     try:
-        account = _get_account(user_email)
-        if account:
-            return {
-                "success": True,
-                "message": "Account transaction history retrieved succesfully.",
-                "transactions": account.transactions,
-            }
+        transactions = _get_account(user_email).transactions
+        return {
+            "success": True,
+            "message": "Account transaction history retrieved succesfully.",
+            "transactions": transactions,
+        }
     except Exception as e:
         return {
             "success": False,
@@ -120,8 +138,17 @@ def get_account_transactions(user_email):
         }
 
 
-# private use
-def _add_income(user_email, amount, description="None"):
+def _add_income(user_email: str, amount: Decimal, description: str = "None"):
+    """Adds an income amount to a user's account.
+
+    :param user_email: Use email.
+    :type user_email: str
+    :param amount: Income amount.
+    :type amount: Decimal
+    :param description: Income description for transaction history, defaults to "None"
+    :type description: str, optional
+    """
+    # Validate the amount
     if amount < 0:
         raise Exception("Amount must be positive")
 
@@ -146,14 +173,23 @@ def _add_income(user_email, amount, description="None"):
         starting_balance=starting_balance,
         ending_balance=ending_balance,
     )
-
     db.add(transaction)
+
     db.commit()
 
 
-# returns True (success) or None (failed)
-# public use
-def add_income(user_email, amount, description="None"):
+def add_income(user_email: str, amount: Decimal, description: str = "None") -> dict:
+    """Request to add an income amount to a user's account.
+
+    :param user_email: Use email.
+    :type user_email: str
+    :param amount: Income amount.
+    :type amount: Decimal
+    :param description: Income description for transaction history, defaults to "None"
+    :type description: str, optional
+    :return: Response object.
+    :rtype: dict
+    """
     try:
         _add_income(user_email, amount, description)
         return {
@@ -166,8 +202,17 @@ def add_income(user_email, amount, description="None"):
         return {"success": False, "error": f"Error adding income: {str(e)}"}
 
 
-# private use
-def _add_expense(user_email, amount, description="None"):
+def _add_expense(user_email: str, amount: Decimal, description: str = "None"):
+    """Adds an expense amount to a user's account.
+
+    :param user_email: Use email.
+    :type user_email: str
+    :param amount: Expense amount.
+    :type amount: Decimal
+    :param description: Expense description for transaction history, defaults to "None"
+    :type description: str, optional
+    """
+    # Validate the amount
     if amount < 0:
         raise Exception("Amount must be positive")
 
@@ -190,13 +235,23 @@ def _add_expense(user_email, amount, description="None"):
         starting_balance=starting_available_funds,
         ending_balance=ending_available_funds,
     )
-
     db.add(transaction)
+
     db.commit()
 
 
-# returns True (success) or None (failed)
-def add_expense(user_email, amount, description="None"):
+def add_expense(user_email: str, amount: Decimal, description: str = "None"):
+    """Request to add an expense amount to a user's account.
+
+    :param user_email: Use email.
+    :type user_email: str
+    :param amount: Espense amount.
+    :type amount: Decimal
+    :param description: Expense description for transaction history, defaults to "None"
+    :type description: str, optional
+    :return: Response object.
+    :rtype: dict
+    """
     try:
         _add_expense(user_email, amount, description)
         return {
@@ -209,7 +264,22 @@ def add_expense(user_email, amount, description="None"):
         return {"success": False, "error": f"Error adding expense: {str(e)}"}
 
 
-def send_money(sender_email, receiver_email, amount, description="None"):
+def send_money(
+    sender_email: str, receiver_email: str, amount: Decimal, description: str = "None"
+) -> dict:
+    """Request to send money to another user's account.
+
+    :param sender_email: Sender email.
+    :type sender_email: str
+    :param receiver_email: Receiver email.
+    :type receiver_email: str
+    :param amount: Amount to send.
+    :type amount: Decimal
+    :param description: Description for transaction histories, defaults to "None"
+    :type description: str, optional
+    :return: Response object
+    :rtype: dict
+    """
     description = f"({amount} from {sender_email} to {receiver_email}): " + description
     try:
         # Add the expense to the sender
