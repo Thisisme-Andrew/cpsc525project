@@ -1,10 +1,9 @@
 """Finance account pages."""
 
-from collections import OrderedDict
 from email_validator import validate_email, EmailNotValidError
 from time import sleep
 
-from .page_templates import Page, NavigationPage
+from .page_templates import Page
 from .. import state
 from ..utils.utils import (
     clear_screen,
@@ -19,30 +18,6 @@ from ...database.services.finances.accounts import (
 )
 
 
-class FinanceAccountDashboardPage(NavigationPage):
-    """Finance account dashboard page."""
-
-    def __init__(self):
-        """Constructs the page."""
-        # Deferred imports to avoid circular dependencies
-        from .main_dashboard import MainDashboardPage
-
-        super().__init__(
-            options=OrderedDict(
-                [
-                    ("Add Income", AddIncomePage),
-                    ("Add Expense", AddExpensePage),
-                    ("Send Money", SendMoneyPage),
-                    ("Account History", AccountHistoryPage),
-                    ("Go Back", MainDashboardPage),
-                ]
-            ),
-            title="Finance Account Dashboard",
-            clear_screen=True,
-            subtitle="\n" + get_account_and_budget_funds_report(),
-        )
-
-
 class AddIncomePage(Page):
     """Add income page."""
 
@@ -52,13 +27,17 @@ class AddIncomePage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
+
+        # Deferred imports to avoid circular dependencies
+        from .main_dashboard import MainDashboardPage
+
         clear_screen()
         print("Add Income\n")
 
         while True:
             print("Please enter income amount or press Enter to go back:\n")
 
-            income = input("Amount: ")
+            income = input("Amount: $")
             if not income:
                 break
 
@@ -94,9 +73,9 @@ class AddIncomePage(Page):
                 break
             return AddIncomePage()
 
-        print("\nReturning to the Finance Account Dashboard...")
+        print("\nReturning to the Main Dashboard...")
         sleep(1)
-        return FinanceAccountDashboardPage()
+        return MainDashboardPage()
 
 
 class AddExpensePage(Page):
@@ -108,13 +87,17 @@ class AddExpensePage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
+
+        # Deferred imports to avoid circular dependencies
+        from .main_dashboard import MainDashboardPage
+
         clear_screen()
         print("Add Expense\n")
 
         while True:
             print("Please enter expense amount or press Enter to go back:\n")
 
-            expense = input("Amount: ")
+            expense = input("Amount: $")
             if not expense:
                 break
 
@@ -149,9 +132,9 @@ class AddExpensePage(Page):
                 break
             return AddExpensePage()
 
-        print("\nReturning to the Finance Account Dashboard...")
+        print("\nReturning to the Main Dashboard...")
         sleep(1)
-        return FinanceAccountDashboardPage()
+        return MainDashboardPage()
 
 
 class SendMoneyPage(Page):
@@ -163,6 +146,10 @@ class SendMoneyPage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
+
+        # Deferred imports to avoid circular dependencies
+        from .main_dashboard import MainDashboardPage
+
         clear_screen()
         print("Send Money\n")
 
@@ -183,7 +170,7 @@ class SendMoneyPage(Page):
 
             while True:
                 print("Please enter an amount to send or press Enter to go back:\n")
-                amount_to_send = input("Amount to send: ")
+                amount_to_send = input("Amount to send: $")
                 if not amount_to_send:
                     break
                 amount_to_send = str_to_decimal(amount_to_send)
@@ -222,11 +209,11 @@ class SendMoneyPage(Page):
 
             print(f"{amount_to_send} sent to {recipient_email} successfully.\n")
             input("Press Enter to return to the previous page...")
-            return FinanceAccountDashboardPage()
+            return MainDashboardPage()
 
-        print("\nReturning to the Finance Account Dashboard...")
+        print("\nReturning to the Main Dashboard...")
         sleep(1)
-        return FinanceAccountDashboardPage()
+        return MainDashboardPage()
 
 
 class AccountHistoryPage(Page):
@@ -238,6 +225,10 @@ class AccountHistoryPage(Page):
         :return: The next page for the app to run.
         :rtype: Page
         """
+
+        # Deferred imports to avoid circular dependencies
+        from .main_dashboard import MainDashboardPage
+
         clear_screen()
         print("Account History\n")
 
@@ -254,16 +245,16 @@ class AccountHistoryPage(Page):
             for transaction in db_response["transactions"]:
                 print(f"-- TRANSACTION {i}--")
                 print(f"Date: {transaction.date}")
-                print(f"Starting Balance: {transaction.starting_balance}")
-                print(f"Amount: {transaction.amount}")
+                print(f"Starting Balance: ${transaction.starting_balance}")
+                print(f"Amount: ${transaction.amount}")
                 print(f"Type: {transaction.transaction_type}")
                 print(f"Description: {transaction.description}")
-                print(f"Ending Balance: {transaction.ending_balance}\n")
+                print(f"Ending Balance: ${transaction.ending_balance}\n")
                 i += 1
 
             retry = input("Press Enter to return to the previous page...")
             break
 
-        print("\nReturning to the Finance Account Dashboard...")
+        print("\nReturning to the Main Dashboard...")
         sleep(1)
-        return FinanceAccountDashboardPage()
+        return MainDashboardPage()

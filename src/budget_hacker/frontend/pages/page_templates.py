@@ -59,7 +59,7 @@ class NavigationPage(Page, ABC):
 
         # Display the page title if provided.
         if self.title is not None:
-            print(f"{self.title}")
+            print(f"--{self.title}--")
             if not self.subtitle:
                 print()
 

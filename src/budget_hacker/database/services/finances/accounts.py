@@ -239,7 +239,7 @@ def _add_expense(user_email: str, amount: Decimal, description: str = "None"):
         raise
 
 
-def add_expense(user_email: str, amount: Decimal, description: str = "None"):
+def add_expense(user_email: str, amount: Decimal, description: str = "None") -> dict:
     """Request to add an expense amount to a user's account.
 
     :param user_email: Use email.

@@ -75,7 +75,7 @@ class BudgetsDashboardPage(NavigationPage):
         super().__init__(
             options=OrderedDict(
                 [
-                    ("Manage Budgets", ManageBudgetsPage),
+                    ("Edit Budgets", ManageBudgetsPage),
                     ("Create a Budget", CreateBudgetPage),
                     ("Go Back", MainDashboardPage),
                 ]

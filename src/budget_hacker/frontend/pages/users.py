@@ -26,7 +26,7 @@ class LoginPage(Page):
         from .main_dashboard import MainDashboardPage, WelcomePage
 
         clear_screen()
-        print("Log In\n")
+        print("--Log In--\n")
 
         while True:
             print("Please enter your login credentials or press Enter to go back:\n")
@@ -84,7 +84,7 @@ class CreateUserPage(Page):
         from .main_dashboard import WelcomePage
 
         clear_screen()
-        print("Create User Account\n")
+        print("--Create User Account--\n")
 
         while True:
             print("Create an account or press Enter to go back:\n")
@@ -141,7 +141,7 @@ class ChangePasswordPage(Page):
         from .main_dashboard import SettingsPage
 
         clear_screen()
-        print("Change Password\n")
+        print("--Change Password--\n")
 
         print(f"Changing password for user: {state.email}\n")
 
@@ -191,7 +191,7 @@ class DeleteUserPage(Page):
         from .main_dashboard import SettingsPage, WelcomePage
 
         clear_screen()
-        print("Delete User Account\n")
+        print("--Delete User Account--\n")
 
         print(f"Deleting user: {state.email}\n")
 
