@@ -14,7 +14,6 @@ from ..utils.utils import (
 )
 from ...database.models.models import Budget
 from ...database.services.finances.accounts import (
-    get_account_balance,
     get_available_account_funds,
 )
 from ...database.services.finances.budgets import (
@@ -22,7 +21,6 @@ from ...database.services.finances.budgets import (
     create_budget,
     delete_budget,
     get_budgets,
-    get_total_budgeted_funds,
     remove_funds,
 )
 
@@ -283,8 +281,7 @@ class RemoveFundsPage(Page):
             remove_funds_resp = remove_funds(self.budget, amount)
             if not remove_funds_resp["success"]:
                 print(remove_funds_resp["error"] + "\n")
-                input("Press Enter to return to the previous page...")
-                return ManageBudgetPage(self.budget)
+                continue
             print(remove_funds_resp["message"])
             break
 
@@ -313,20 +310,23 @@ class DeleteBudgetPage(Page):
         clear_screen()
         print("Delete Budget\n")
 
-        # Display a table for the budget
-        print(budgets_to_table([self.budget]) + "\n")
+        while True:
+            # Display a table for the budget
+            print(budgets_to_table([self.budget]) + "\n")
 
-        confirm = input("Are you sure you want to delte this budget? (y or n): ")
-        if not confirm.lower() in ["y", "yes"]:
-            print("Aborting...")
-            sleep(1)
-            return ManageBudgetPage(self.budget)
+            confirm = input("Are you sure you want to delte this budget? (y or n): ")
+            if not confirm.lower() in ["y", "yes"]:
+                print("Aborting...")
+                sleep(1)
+                return ManageBudgetPage(self.budget)
 
-        # Request to delete budget
-        delete_budget_resp = delete_budget(self.budget)
-        if not delete_budget_resp["success"]:
-            print(delete_budget_resp["error"])
-        print(delete_budget_resp["message"])
+            # Request to delete budget
+            delete_budget_resp = delete_budget(self.budget)
+            if not delete_budget_resp["success"]:
+                print(delete_budget_resp["error"] + "\n")
+                continue
+            print(delete_budget_resp["message"])
+            break
 
         print("\nReturning to the previous page...")
         sleep(1.5)
@@ -377,13 +377,17 @@ class CreateBudgetPage(Page):
             if goal < 0:
                 print("Goal must be positive! Please try again.\n")
                 continue
-            break
 
-        # Request to create the budget
-        create_budget_resp = create_budget(state.email, name, goal)
-        if not create_budget_resp["success"]:
-            print(create_budget_resp["error"])
-        print(create_budget_resp["message"])
+            # Request to create the budget
+            create_budget_resp = create_budget(state.email, name, goal)
+            if not create_budget_resp["success"]:
+                print(create_budget_resp["error"] + "\n")
+                retry = input("Would you like to try again? (y or n): ")
+                if retry in ["y", "yes"]:
+                    return CreateBudgetPage()
+                break
+            print(create_budget_resp["message"])
+            break
 
         print("\nReturning to the previous page...")
         sleep(1.5)

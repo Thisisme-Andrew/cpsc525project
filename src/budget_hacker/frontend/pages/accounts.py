@@ -75,26 +75,24 @@ class AddIncomePage(Page):
             description = input("Description: ")
             if not description:
                 break
-            else:
-                db_response = add_income(state.email, income, description)
-                if not db_response["success"]:
-                    print(db_response["error"] + "\n")
-                    user_response = input("Would you like to try again? (y or n): ")
-                    if user_response in ["y", "yes"]:
-                        clear_screen()
-                        continue
-                    else:
-                        break
-                else:
-                    print("Income added Successfully")
-                    print(
-                        f"Balance updated from {db_response['updatedBalance'] - income} to {db_response['updatedBalance']}"
-                    )
-                    user_response = input("Add more income? (y or n): ")
-                    if user_response not in ["y", "yes"]:
-                        break
-                    else:
-                        clear_screen()
+
+            db_response = add_income(state.email, income, description)
+            if not db_response["success"]:
+                print(db_response["error"] + "\n")
+                retry = input("Would you like to try again? (y or n): ")
+                if retry in ["y", "yes"]:
+                    return AddIncomePage()
+                break
+
+            print("\nIncome added Successfully")
+            print(
+                f"Balance updated from ${db_response['updatedBalance'] - income} to ${db_response['updatedBalance']}\n"
+            )
+
+            retry = input("Add more income? (y or n): ")
+            if retry not in ["y", "yes"]:
+                break
+            return AddIncomePage()
 
         print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
@@ -133,26 +131,23 @@ class AddExpensePage(Page):
             description = input("Description: ")
             if not description:
                 break
-            else:
-                db_response = add_expense(state.email, expense, description)
-                if not db_response["success"]:
-                    print(db_response["error"] + "\n")
-                    user_response = input("Would you like to try again? (y or n): ")
-                    if user_response in ["y", "yes"]:
-                        clear_screen()
-                        continue
-                    else:
-                        break
-                else:
-                    print("Expense added Successfully")
-                    print(
-                        f"Balance updated from {db_response['updatedBalance'] + expense} to {db_response['updatedBalance']}"
-                    )
-                    user_response = input("Add another expense? (y or n): ")
-                    if user_response not in ["y", "yes"]:
-                        break
-                    else:
-                        clear_screen()
+
+            db_response = add_expense(state.email, expense, description)
+            if not db_response["success"]:
+                print(db_response["error"] + "\n")
+                retry = input("Would you like to try again? (y or n): ")
+                if retry in ["y", "yes"]:
+                    return AddExpensePage()
+                break
+
+            print("\nExpense added Successfully")
+            print(
+                f"Balance updated from ${db_response['updatedBalance'] + expense} to ${db_response['updatedBalance']}\n"
+            )
+            retry = input("Add another expense? (y or n): ")
+            if retry not in ["y", "yes"]:
+                break
+            return AddExpensePage()
 
         print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
@@ -250,28 +245,24 @@ class AccountHistoryPage(Page):
             db_response = get_transactions(state.email)
             if not db_response["success"]:
                 print(db_response["error"] + "\n")
-                user_response = input("Would you like to try again? (y or n): ")
-                if not user_response == "yes":
+                retry = input("Would you like to try again? (y or n): ")
+                if not retry == "yes":
                     break
-                continue
-            else:
-                clear_screen()
-                print("Transaction history:")
-                i = 1
-                for transaction in db_response["transactions"]:
-                    print(f"-- TRANSACTION {i}--")
-                    print(f"Date: {transaction.date}")
-                    print(f"Starting Balance: {transaction.starting_balance}")
-                    print(f"Amount: {transaction.amount}")
-                    print(f"Type: {transaction.transaction_type}")
-                    print(f"Description: {transaction.description}")
-                    print(f"Ending Balance: {transaction.ending_balance}\n")
-                    i += 1
+                return AccountHistoryPage()
 
-                user_response = input(
-                    "Enter any key to return to the finance Dashbaord"
-                )
-                break
+            i = 1
+            for transaction in db_response["transactions"]:
+                print(f"-- TRANSACTION {i}--")
+                print(f"Date: {transaction.date}")
+                print(f"Starting Balance: {transaction.starting_balance}")
+                print(f"Amount: {transaction.amount}")
+                print(f"Type: {transaction.transaction_type}")
+                print(f"Description: {transaction.description}")
+                print(f"Ending Balance: {transaction.ending_balance}\n")
+                i += 1
+
+            retry = input("Press Enter to return to the previous page...")
+            break
 
         print("\nReturning to the Finance Account Dashboard...")
         sleep(1)
