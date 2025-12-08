@@ -3,7 +3,7 @@
 from decimal import Decimal
 from .budgets import _get_total_budgeted_funds
 from .constants import TransactionType, MAX_BALANCE
-from ..users.users import get_user
+from ..users.users import _get_user
 from ...models.models import Transaction, Account
 from .... import db
 
@@ -13,31 +13,25 @@ def _create_account(user_email: str):
 
     :param user_email: User email.
     :type user_email: str
-    :return: True if success, false otherwise.
-    :rtype: bool
     """
-    account = Account(user_email=user_email, balance=0.00)
     try:
+        account = Account(user_email=user_email, balance=0.00)
         db.add(account)
         db.commit()
-        return {"success": True, "message": "Account created succesfully."}
-    except Exception as e:
+    except Exception:
         db.rollback()
-        return {"success": False, "error": f"Error creating account: {str(e)}"}
+        raise
 
 
 def _get_account(user_email: str) -> Account:
-    """Gets a user's account.
+    """Gets a user's financial account.
 
     :param user_email: User email.
     :type user_email: str
     :return: The user's account.
     :rtype: Account
     """
-    account = get_user(user_email).account
-    if not account:
-        raise Exception("Account not found")
-    return account
+    return _get_user(user_email).account
 
 
 def get_account(user_email: str) -> dict:
@@ -75,7 +69,6 @@ def get_account_balance(user_email: str) -> dict:
             "balance": account.balance,
         }
     except Exception as e:
-        db.rollback()
         return {"success": False, "error": f"Error retreiving balance: {str(e)}"}
 
 
@@ -109,7 +102,6 @@ def get_available_account_funds(user_email: str) -> dict:
         }
 
     except Exception as e:
-        db.rollback()
         return {
             "success": False,
             "error": f"Error retrieving available account funds: {str(e)}",
@@ -148,34 +140,38 @@ def _add_income(user_email: str, amount: Decimal, description: str = "None"):
     :param description: Income description for transaction history, defaults to "None"
     :type description: str, optional
     """
-    # Validate the amount
-    if amount < 0:
-        raise Exception("Amount must be positive")
+    try:
+        # Validate the amount
+        if amount < 0:
+            raise RuntimeError("Amount must be positive.")
 
-    # Get the user's account
-    account = _get_account(user_email)
+        # Get the user's account
+        account = _get_account(user_email)
 
-    # Add the amount to the user's account balance
-    starting_balance = account.balance
-    ending_balance = account.balance + amount
-    if ending_balance > MAX_BALANCE:
-        raise Exception(
-            f"Amount ${amount} plus current balance ${starting_balance} exceeds the maximum allowed account balance of ${MAX_BALANCE}"
+        # Add the amount to the user's account balance
+        starting_balance = account.balance
+        ending_balance = account.balance + amount
+        if ending_balance > MAX_BALANCE:
+            raise RuntimeError(
+                f"Amount ${amount} plus current balance ${starting_balance} exceeds the maximum allowed account balance of ${MAX_BALANCE}."
+            )
+        account.balance += amount
+
+        # Record the transaction
+        transaction = Transaction(
+            account_id=account.id,
+            amount=amount,
+            transaction_type=TransactionType.INCOME,
+            description=description,
+            starting_balance=starting_balance,
+            ending_balance=ending_balance,
         )
-    account.balance += amount
+        db.add(transaction)
 
-    # Record the transaction
-    transaction = Transaction(
-        account_id=account.id,
-        amount=amount,
-        transaction_type=TransactionType.INCOME,
-        description=description,
-        starting_balance=starting_balance,
-        ending_balance=ending_balance,
-    )
-    db.add(transaction)
-
-    db.commit()
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 def add_income(user_email: str, amount: Decimal, description: str = "None") -> dict:
@@ -198,7 +194,6 @@ def add_income(user_email: str, amount: Decimal, description: str = "None") -> d
             "updatedBalance": _get_account(user_email).balance,
         }
     except Exception as e:
-        db.rollback()
         return {"success": False, "error": f"Error adding income: {str(e)}"}
 
 
@@ -212,32 +207,36 @@ def _add_expense(user_email: str, amount: Decimal, description: str = "None"):
     :param description: Expense description for transaction history, defaults to "None"
     :type description: str, optional
     """
-    # Validate the amount
-    if amount < 0:
-        raise Exception("Amount must be positive")
+    try:
+        # Validate the amount
+        if amount < 0:
+            raise RuntimeError("Amount must be positive.")
 
-    # Get the user's account and available funds
-    account = _get_account(user_email)
-    starting_available_funds = _get_available_account_funds(user_email)
+        # Get the user's account and available funds
+        account = _get_account(user_email)
+        starting_available_funds = _get_available_account_funds(user_email)
 
-    # Subtract the amount from the available funds
-    ending_available_funds = starting_available_funds - amount
-    if ending_available_funds < 0:
-        raise Exception(f"Insufficient available funds")
-    account.balance -= amount
+        # Subtract the amount from the available funds
+        ending_available_funds = starting_available_funds - amount
+        if ending_available_funds < 0:
+            raise RuntimeError(f"Insufficient available funds.")
+        account.balance -= amount
 
-    # Record the transaction
-    transaction = Transaction(
-        account_id=account.id,
-        amount=amount,
-        transaction_type=TransactionType.EXPENSE,
-        description=description,
-        starting_balance=starting_available_funds,
-        ending_balance=ending_available_funds,
-    )
-    db.add(transaction)
+        # Record the transaction
+        transaction = Transaction(
+            account_id=account.id,
+            amount=amount,
+            transaction_type=TransactionType.EXPENSE,
+            description=description,
+            starting_balance=starting_available_funds,
+            ending_balance=ending_available_funds,
+        )
+        db.add(transaction)
 
-    db.commit()
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 def add_expense(user_email: str, amount: Decimal, description: str = "None"):
@@ -260,7 +259,6 @@ def add_expense(user_email: str, amount: Decimal, description: str = "None"):
             "updatedBalance": _get_account(user_email).balance,
         }
     except Exception as e:
-        db.rollback()
         return {"success": False, "error": f"Error adding expense: {str(e)}"}
 
 
@@ -289,5 +287,4 @@ def send_money(
 
         return {"success": True, "message": "Money sent succesfully."}
     except Exception as e:
-        db.rollback()
         return {"success": False, "error": f"Error sending money: {str(e)}"}

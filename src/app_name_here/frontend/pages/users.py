@@ -1,6 +1,5 @@
 from email_validator import EmailNotValidError, validate_email
 from getpass import getpass
-import hashlib
 from time import sleep
 
 from .page_templates import Page
@@ -12,9 +11,6 @@ from ...database.services.users.users import (
     change_password,
     remove_user,
 )
-
-# Password salt
-SALT = "CPSC525SecurePasswordSalt123!"
 
 
 class LoginPage(Page):
@@ -31,28 +27,23 @@ class LoginPage(Page):
 
         clear_screen()
         print("Log In\n")
-        
-        print("Please enter your login credentials:\n")
 
         while True:
+            print("Please enter your login credentials or press Enter to go back:\n")
+
             # Get the user's credentials
             email = input("Email: ")
             if not email:
-                # Return to the welcome page
-                print()
                 return WelcomePage()
 
             # Get and hash the password
             password = getpass("Password: ")
-            while not password:
-                password = getpass("Password: ")
+            if not password:
+                return WelcomePage()
 
-            hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
-
-            db_response = login(email, hashed_pw)
+            db_response = login(email, password)
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
-                print("Try again or press Enter to go back.\n")
+                print(db_response["error"] + "\n")
                 continue
 
             # Success, update global state and redirect to the dashboard
@@ -95,13 +86,12 @@ class CreateUserPage(Page):
         clear_screen()
         print("Create User Account\n")
 
-        print("Create an account or press Enter to go back:\n")
-
         while True:
+            print("Create an account or press Enter to go back:\n")
+
             # Get the user's email
             email = input("Email: ")
             if not email:
-                print("Returning to the previous page...")
                 return WelcomePage()
 
             try:
@@ -123,15 +113,12 @@ class CreateUserPage(Page):
 
             # Confirm the passwords match
             if password != confirm_password:
-                print("Passwords do not match. Try again or press Enter to go back.\n")
+                print("Passwords do not match. Please try again.\n")
                 continue
 
-            # Hash the password
-            hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
-
-            db_response = create_user(email, hashed_pw)
+            db_response = create_user(email, password)
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
+                print(db_response["error"] + "\n")
                 continue
 
             # Success, require the user to log into their login info
@@ -161,8 +148,6 @@ class ChangePasswordPage(Page):
         while True:
             old_pass = getpass("Old password: ")
             if not old_pass:
-                # Return to the settings page
-                print()
                 return SettingsPage()
 
             # Get the user's new password
@@ -181,13 +166,9 @@ class ChangePasswordPage(Page):
                 print("Passwords do not match. Try again or press Enter to go back.\n")
                 continue
 
-            # Hash the passwords
-            old_hashed_pw = hashlib.sha256((old_pass + SALT).encode()).hexdigest()
-            new_hashed_pw = hashlib.sha256((new_pass + SALT).encode()).hexdigest()
-
-            db_response = change_password(state.email, old_hashed_pw, new_hashed_pw)
+            db_response = change_password(state.email, old_pass, new_pass)
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
+                print(db_response["error"] + "\n")
                 continue
 
             # Success, return to the settings page
@@ -234,7 +215,7 @@ class DeleteUserPage(Page):
             db_response = remove_user(state.email)
             # Perform the user deletion
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
+                print(db_response["error"] + "\n")
                 continue
 
             # Success, clear state and return to the welcome page

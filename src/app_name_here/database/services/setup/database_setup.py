@@ -10,18 +10,8 @@ from ...models.models import Base, User
 from ..users.users import create_user
 from ..finances.accounts import add_income
 
-DEFAULT_USERS = [
-    User(
-        email="alice@gmail.com",
-        # Password: "password"
-        password="8a264d3fec7cbc4a2650d416a4485875759ab8282011719525cb95d3d88c18fb",
-    ),
-    User(
-        email="bob@gmail.com",
-        # Password: "password"
-        password="8a264d3fec7cbc4a2650d416a4485875759ab8282011719525cb95d3d88c18fb",
-    ),
-]
+# List of default users to create (<username>, <passwored>)
+DEFAULT_USERS = [("alice@gmail.com", "password"), ("bob@gmail.com", "password")]
 
 
 def run_db_setup():
@@ -32,11 +22,10 @@ def run_db_setup():
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
 
-    # Populate default users.
-    for user in DEFAULT_USERS:
-        create_user(user.email, user.password)
-        create_budget(user.email, "Car", Decimal(10000))
+    # Populate the default users.
+    for email, password in DEFAULT_USERS:
+        create_user(email, password)
+        create_budget(email, "New Car", Decimal(10000))
 
-    add_income("alice@gmail.com", 12345, "Initial Amount")
-    # Commit all changes to the database.
-    db.commit()
+    # Add a default income to Alice's account
+    add_income("alice@gmail.com", 12345, "Grandma's inheritance")

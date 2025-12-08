@@ -136,7 +136,7 @@ class AddExpensePage(Page):
             else:
                 db_response = add_expense(state.email, expense, description)
                 if not db_response["success"]:
-                    print(f"Error: {db_response['error']}")
+                    print(db_response["error"] + "\n")
                     user_response = input("Would you like to try again? (y or n): ")
                     if user_response in ["y", "yes"]:
                         clear_screen()
@@ -187,17 +187,20 @@ class SendMoneyPage(Page):
             print()
 
             while True:
-                print("Please enter amount to send:\n")
+                print("Please enter an amount to send or press Enter to go back:\n")
                 amount_to_send = input("Amount to send: ")
+                if not amount_to_send:
+                    break
                 amount_to_send = str_to_decimal(amount_to_send)
                 if not amount_to_send:
                     print("Invalid amount!\n")
+                    continue
                 elif amount_to_send < 0:
                     print("Amount must be positive!\n")
                 print()
                 break
 
-            print("Please enter a description or press Enter to cancel and go back:\n")
+            print("Please enter a description:\n")
             description = input("Description: ")
             print()
             confirm = input(
@@ -246,7 +249,7 @@ class AccountHistoryPage(Page):
         while True:
             db_response = get_transactions(state.email)
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
+                print(db_response["error"] + "\n")
                 user_response = input("Would you like to try again? (y or n): ")
                 if not user_response == "yes":
                     break

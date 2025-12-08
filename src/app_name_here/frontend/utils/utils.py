@@ -69,7 +69,7 @@ def str_to_decimal(str_num: str) -> Decimal | bool:
     # Try an initial Decimal conversion
     try:
         val = Decimal(str_num)
-    except:
+    except Exception:
         return False
 
     # Check for a decimal point
