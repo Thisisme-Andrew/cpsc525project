@@ -48,7 +48,7 @@ class LoginPage(Page):
 
             # Success, update global state and redirect to the dashboard
             state.email = email
-            print("\nSuccess. Redirecting...")
+            print("\nSuccess. Redirecting to the Budget Hacker Dashboard...")
             sleep(1)
             return MainDashboardPage()
 
@@ -123,7 +123,7 @@ class CreateUserPage(Page):
 
             # Success, require the user to log into their login info
             print()
-            print("Please log in to continue. Redirecting...")
+            print("Please log in to continue. Redirecting to the Log In page...")
             sleep(1.5)
             return LoginPage()
 
@@ -171,9 +171,9 @@ class ChangePasswordPage(Page):
                 print(db_response["error"] + "\n")
                 continue
 
-            # Success, return to the settings page
+            # Success, return to the previous page
             print()
-            print("Password changed successfully. Redirecting...")
+            print("Password changed successfully. Returning to the previous page...")
             sleep(1.5)
             return SettingsPage()
 
@@ -221,6 +221,6 @@ class DeleteUserPage(Page):
             # Success, clear state and return to the welcome page
             state.clear()
             print()
-            print("Account deleted. Redirecting...")
+            print("Account deleted. Redirecting to the Welcome page")
             sleep(1.5)
             return WelcomePage()
