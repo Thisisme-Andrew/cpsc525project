@@ -8,9 +8,9 @@ import os
 from textwrap import dedent
 from typing import Any
 
-from app_name_here.database.services.finances.accounts import get_account_balance
-from app_name_here.database.services.finances.budgets import get_total_budgeted_funds
 from .. import state
+from ...database.services.finances.accounts import get_account_balance
+from ...database.services.finances.budgets import get_total_budgeted_funds
 
 
 def get_choice_from_options(options: OrderedDict, prompt="Choose an option:") -> Any:
