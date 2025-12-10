@@ -1,6 +1,4 @@
-"""
-Application page base class and templates.
-"""
+"""Application page base class and templates."""
 
 from abc import ABC, abstractmethod
 from collections import OrderedDict

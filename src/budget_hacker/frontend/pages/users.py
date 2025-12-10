@@ -1,3 +1,5 @@
+"""User pages."""
+
 from email_validator import EmailNotValidError, validate_email
 from getpass import getpass
 from time import sleep
