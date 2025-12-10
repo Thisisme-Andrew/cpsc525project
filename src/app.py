@@ -2,7 +2,7 @@
 Application entry point.
 """
 
-from app_name_here import run
+from budget_hacker import run
 
 if __name__ == '__main__':
     run()

@@ -59,7 +59,7 @@ class NavigationPage(Page, ABC):
 
         # Display the page title if provided.
         if self.title is not None:
-            print(f"{self.title}")
+            print(f"--{self.title}--")
             if not self.subtitle:
                 print()
 
@@ -71,7 +71,7 @@ class NavigationPage(Page, ABC):
 
         # Exit the app if the chosen page is None.
         if chosen_page is None:
-            print("Thank you for using <TODO-App-Name>! Goodbye.")
+            print("Thank you for using Budget Hacker! Goodbye.")
             sys.exit(0)
 
         # Return an instance of the chosen page

@@ -4,19 +4,23 @@ from collections import OrderedDict
 from prettytable import PrettyTable
 from time import sleep
 
-from .accounts import is_valid_number
-from .dashboard import FinanceDashboardPage
 from .page_templates import NavigationPage, Page
 from .. import state
-from ..utils.utils import clear_screen, get_choice_from_options
+from ..utils.utils import (
+    clear_screen,
+    get_account_and_budget_funds_report,
+    get_choice_from_options,
+    str_to_decimal,
+)
 from ...database.models.models import Budget
-from ...database.services.finances.accounts import get_account_balance
+from ...database.services.finances.accounts import (
+    get_available_account_funds,
+)
 from ...database.services.finances.budgets import (
     add_funds,
     create_budget,
     delete_budget,
     get_budgets,
-    get_total_budgeted_funds,
     remove_funds,
 )
 
@@ -66,14 +70,14 @@ class BudgetsDashboardPage(NavigationPage):
     def __init__(self):
         """Constructs the page."""
         # Deferred imports to avoid circular dependencies
-        from .dashboard import FinanceDashboardPage
+        from .main_dashboard import MainDashboardPage
 
         super().__init__(
             options=OrderedDict(
                 [
-                    ("Manage Budgets", ManageBudgetsPage),
+                    ("Edit Budgets", ManageBudgetsPage),
                     ("Create a Budget", CreateBudgetPage),
-                    ("Go Back", FinanceDashboardPage),
+                    ("Go Back", MainDashboardPage),
                 ]
             ),
             title="Budgets Dashboard",
@@ -109,7 +113,7 @@ class ManageBudgetsPage(Page):
         # Handle if the user has no budgets
         if not budgets:
             input("No budgets available. Press Enter to go back...")
-            print("\nReturning to Budget Dashboard...")
+            print("\nReturning to the Budget Dashboard...")
             sleep(1)
             return BudgetsDashboardPage()
 
@@ -174,29 +178,16 @@ class AddFundsPage(Page):
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
 
-        # Get the user's account balance.
-        account_balance_resp = get_account_balance(state.email)
-        if not account_balance_resp["success"]:
-            print(account_balance_resp["error"])
-            print("\nReturning to the previous page...")
-            sleep(1.5)
+        # Get the user's available account funds
+        available_account_funds_resp = get_available_account_funds(state.email)
+        if not available_account_funds_resp["success"]:
+            print(available_account_funds_resp["error"] + "\n")
+            input("Press Enter to return to the previous page...")
             return ManageBudgetPage(self.budget)
-        account_balance = account_balance_resp["balance"]
-
-        # Get the user's total amount of budgeted funds
-        total_budgeted_funds_resp = get_total_budgeted_funds(state.email)
-        if not total_budgeted_funds_resp["success"]:
-            print(total_budgeted_funds_resp["error"])
-            print("\nReturning to the previous page...")
-            sleep(1.5)
-            return ManageBudgetPage(self.budget)
-        account_balance = account_balance_resp["balance"]
-        total_budgeted_funds = total_budgeted_funds_resp["total"]
-
-        available_account_funds = account_balance - total_budgeted_funds
+        available_account_funds = available_account_funds_resp["availableFunds"]
 
         # Display the user's account funds
-        print(FinanceDashboardPage.get_subtitle() + "\n")
+        print(get_account_and_budget_funds_report() + "\n")
 
         while True:
             # Get the amount of funds to add
@@ -206,7 +197,7 @@ class AddFundsPage(Page):
                 break
 
             # Amount validation
-            amount = is_valid_number(amount)
+            amount = str_to_decimal(amount)
             if not amount:
                 print("Invalid Input!\n")
                 continue
@@ -221,8 +212,9 @@ class AddFundsPage(Page):
             # Request to add funds
             add_funds_resp = add_funds(self.budget, amount)
             if not add_funds_resp["success"]:
-                print(add_funds_resp["error"])
-                break
+                print(add_funds_resp["error"] + "\n")
+                input("Press Enter to return to the previous page...")
+                return ManageBudgetPage(self.budget)
             print(add_funds_resp["message"])
 
             # Goal reached message
@@ -261,7 +253,7 @@ class RemoveFundsPage(Page):
         print(budgets_to_table([self.budget]) + "\n")
 
         # Display the user's account funds
-        print(FinanceDashboardPage.get_subtitle() + "\n")
+        print(get_account_and_budget_funds_report() + "\n")
 
         while True:
             # Get the amount of funds to remove
@@ -273,7 +265,7 @@ class RemoveFundsPage(Page):
                 break
 
             # Amount validation
-            amount = is_valid_number(amount)
+            amount = str_to_decimal(amount)
             if not amount:
                 print("Invalid Input!\n")
                 continue
@@ -288,8 +280,8 @@ class RemoveFundsPage(Page):
             # Request to remove funds
             remove_funds_resp = remove_funds(self.budget, amount)
             if not remove_funds_resp["success"]:
-                print(remove_funds_resp["error"])
-                break
+                print(remove_funds_resp["error"] + "\n")
+                continue
             print(remove_funds_resp["message"])
             break
 
@@ -318,20 +310,23 @@ class DeleteBudgetPage(Page):
         clear_screen()
         print("Delete Budget\n")
 
-        # Display a table for the budget
-        print(budgets_to_table([self.budget]) + "\n")
+        while True:
+            # Display a table for the budget
+            print(budgets_to_table([self.budget]) + "\n")
 
-        confirm_delete = input("Are you sure you want to delte this budget? (y or n): ")
-        if not confirm_delete.lower() in ["y", "yes"]:
-            print("Aborting...")
-            sleep(1)
-            return ManageBudgetPage(self.budget)
+            confirm = input("Are you sure you want to delte this budget? (y or n): ")
+            if not confirm.lower() in ["y", "yes"]:
+                print("Aborting...")
+                sleep(1)
+                return ManageBudgetPage(self.budget)
 
-        # Request to delete budget
-        delete_budget_resp = delete_budget(self.budget)
-        if not delete_budget_resp["success"]:
-            print(delete_budget_resp["error"])
-        print(delete_budget_resp["message"])
+            # Request to delete budget
+            delete_budget_resp = delete_budget(self.budget)
+            if not delete_budget_resp["success"]:
+                print(delete_budget_resp["error"] + "\n")
+                continue
+            print(delete_budget_resp["message"])
+            break
 
         print("\nReturning to the previous page...")
         sleep(1.5)
@@ -375,20 +370,24 @@ class CreateBudgetPage(Page):
                 return BudgetsDashboardPage()
 
             # Validate the goal
-            goal = is_valid_number(goal)
+            goal = str_to_decimal(goal)
             if not goal:
                 print("Invalid Input! Please try again.\n")
                 continue
             if goal < 0:
                 print("Goal must be positive! Please try again.\n")
                 continue
-            break
 
-        # Request to create the budget
-        create_budget_resp = create_budget(state.email, name, goal)
-        if not create_budget_resp["success"]:
-            print(create_budget_resp["error"])
-        print(create_budget_resp["message"])
+            # Request to create the budget
+            create_budget_resp = create_budget(state.email, name, goal)
+            if not create_budget_resp["success"]:
+                print(create_budget_resp["error"] + "\n")
+                retry = input("Would you like to try again? (y or n): ")
+                if retry in ["y", "yes"]:
+                    return CreateBudgetPage()
+                break
+            print(create_budget_resp["message"])
+            break
 
         print("\nReturning to the previous page...")
         sleep(1.5)

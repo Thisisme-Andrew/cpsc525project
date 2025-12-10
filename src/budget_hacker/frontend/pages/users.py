@@ -1,20 +1,16 @@
 from email_validator import EmailNotValidError, validate_email
 from getpass import getpass
-import hashlib
 from time import sleep
 
 from .page_templates import Page
 from .. import state
 from ..utils.utils import clear_screen
-from ...database.services.users.users_services import (
+from ...database.services.users.users import (
     create_user,
     login,
     change_password,
     remove_user,
 )
-
-# Password salt
-SALT = "CPSC525SecurePasswordSalt123!"
 
 
 class LoginPage(Page):
@@ -27,37 +23,34 @@ class LoginPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import DashboardPage, WelcomePage
+        from .main_dashboard import MainDashboardPage, WelcomePage
 
         clear_screen()
-        print("Please enter your login credentials:\n")
+        print("--Log In--\n")
 
         while True:
+            print("Please enter your login credentials or press Enter to go back:\n")
+
             # Get the user's credentials
             email = input("Email: ")
             if not email:
-                # Return to the welcome page
-                print()
                 return WelcomePage()
 
             # Get and hash the password
             password = getpass("Password: ")
-            while not password:
-                password = getpass("Password: ")
+            if not password:
+                return WelcomePage()
 
-            hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
-
-            db_response = login(email, hashed_pw)
+            db_response = login(email, password)
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
-                print("Try again or press Enter to go back.\n")
+                print(db_response["error"] + "\n")
                 continue
 
             # Success, update global state and redirect to the dashboard
             state.email = email
-            print("\nSuccess. Redirecting...")
+            print("\nSuccess. Redirecting to the Budget Hacker Dashboard...")
             sleep(1)
-            return DashboardPage()
+            return MainDashboardPage()
 
 
 class LogoutPage(Page):
@@ -70,7 +63,7 @@ class LogoutPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import WelcomePage
+        from .main_dashboard import WelcomePage
 
         print("Logging out...")
         state.clear()
@@ -88,16 +81,17 @@ class CreateUserPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import WelcomePage
+        from .main_dashboard import WelcomePage
 
         clear_screen()
-        print("Create an account or press Enter to go back:\n")
+        print("--Create User Account--\n")
 
         while True:
+            print("Create an account or press Enter to go back:\n")
+
             # Get the user's email
             email = input("Email: ")
             if not email:
-                print("Returning to the previous page...")
                 return WelcomePage()
 
             try:
@@ -119,20 +113,17 @@ class CreateUserPage(Page):
 
             # Confirm the passwords match
             if password != confirm_password:
-                print("Passwords do not match. Try again or press Enter to go back.\n")
+                print("Passwords do not match. Please try again.\n")
                 continue
 
-            # Hash the password
-            hashed_pw = hashlib.sha256((password + SALT).encode()).hexdigest()
-
-            db_response = create_user(email, hashed_pw)
+            db_response = create_user(email, password)
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
+                print(db_response["error"] + "\n")
                 continue
 
             # Success, require the user to log into their login info
             print()
-            print("Please log in to continue. Redirecting...")
+            print("Please log in to continue. Redirecting to the Log In page...")
             sleep(1.5)
             return LoginPage()
 
@@ -147,16 +138,16 @@ class ChangePasswordPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import SettingsPage
+        from .main_dashboard import SettingsPage
 
         clear_screen()
+        print("--Change Password--\n")
+
         print(f"Changing password for user: {state.email}\n")
 
         while True:
             old_pass = getpass("Old password: ")
             if not old_pass:
-                # Return to the settings page
-                print()
                 return SettingsPage()
 
             # Get the user's new password
@@ -175,18 +166,14 @@ class ChangePasswordPage(Page):
                 print("Passwords do not match. Try again or press Enter to go back.\n")
                 continue
 
-            # Hash the passwords
-            old_hashed_pw = hashlib.sha256((old_pass + SALT).encode()).hexdigest()
-            new_hashed_pw = hashlib.sha256((new_pass + SALT).encode()).hexdigest()
-
-            db_response = change_password(state.email, old_hashed_pw, new_hashed_pw)
+            db_response = change_password(state.email, old_pass, new_pass)
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
+                print(db_response["error"] + "\n")
                 continue
 
-            # Success, return to the settings page
+            # Success, return to the previous page
             print()
-            print("Password changed successfully. Redirecting...")
+            print("Password changed successfully. Returning to the previous page...")
             sleep(1.5)
             return SettingsPage()
 
@@ -201,25 +188,26 @@ class DeleteUserPage(Page):
         :rtype: Page
         """
         # Deferred imports to avoid circular dependencies
-        from .dashboard import SettingsPage, WelcomePage
+        from .main_dashboard import SettingsPage, WelcomePage
 
         clear_screen()
+        print("--Delete User Account--\n")
+
         print(f"Deleting user: {state.email}\n")
 
         while True:
-            confirm_email = input("Confirm your email: ")
-            if not confirm_email:
+            confirm = input("Confirm your email: ")
+            if not confirm:
                 # Return to the settings page
                 print()
                 return SettingsPage()
-            if confirm_email != state.email:
+            if confirm != state.email:
                 print("Incorrect email. Please try again.\n")
                 continue
 
-            confirm_delete = input(
-                "Are you sure you want to delete your account? (y or n): "
-            )
-            if not confirm_delete.lower() in ["y", "yes"]:
+            confirm = input("Are you sure you want to delete your account? (y or n): ")
+            if not confirm.lower() in ["y", "yes"]:
+                # Return to the settings page
                 print("Aborting...")
                 sleep(1)
                 return SettingsPage()
@@ -227,12 +215,12 @@ class DeleteUserPage(Page):
             db_response = remove_user(state.email)
             # Perform the user deletion
             if not db_response["success"]:
-                print(f"Error: {db_response['error']}")
+                print(db_response["error"] + "\n")
                 continue
 
             # Success, clear state and return to the welcome page
             state.clear()
             print()
-            print("Account deleted. Redirecting...")
+            print("Account deleted. Redirecting to the Welcome page")
             sleep(1.5)
             return WelcomePage()
