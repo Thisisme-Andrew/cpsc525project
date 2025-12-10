@@ -51,7 +51,7 @@ Vulnerability:
 
 2. The Flaw: send_money() uses \_add_income(), so if the recipient's account balance plus the incoming amount would exceed $99999999.99, then \_add_income() will raise an exception containing sensitive information.
 
-3. Information Leak: When this exception is raised, it prints an error message "Amount ${amount} plus current balance ${starting_balance} exceeds the maximum allowed account balance of ${MAX_BALANCE}." (line 156).
+3. Information Leak: When this exception is raised, it prints an error message "Amount ${amount} plus current balance ${starting_balance} exceeds the maximum allowed account balance of ${MAX_BALANCE}." (line 160).
 
 4. Security Impact: This error message inadvertently displays to the sender the recipient's account balance as the {starting_balance}. This is a major vulnerability, as it allows the sender to view the recipient's account balance, constituting an unauthorized exposure of sensitive information.
 

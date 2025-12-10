@@ -130,15 +130,19 @@ def get_transactions(user_email: str) -> dict:
         }
 
 
-def _add_income(user_email: str, amount: Decimal, description: str = "None"):
+def _add_income(
+    user_email: str, amount: Decimal, description: str = "None", commit: bool = True
+):
     """Adds an income amount to a user's account.
 
-    :param user_email: Use email.
+    :param user_email: User email.
     :type user_email: str
     :param amount: Income amount.
     :type amount: Decimal
     :param description: Income description for transaction history, defaults to "None"
     :type description: str, optional
+    :param commit: Flag to automatically commit the change, defaults to True
+    :type commit: bool, optional
     """
     try:
         # Validate the amount
@@ -168,7 +172,8 @@ def _add_income(user_email: str, amount: Decimal, description: str = "None"):
         )
         db.add(transaction)
 
-        db.commit()
+        if commit:
+            db.commit()
     except Exception:
         db.rollback()
         raise
@@ -177,7 +182,7 @@ def _add_income(user_email: str, amount: Decimal, description: str = "None"):
 def add_income(user_email: str, amount: Decimal, description: str = "None") -> dict:
     """Request to add an income amount to a user's account.
 
-    :param user_email: Use email.
+    :param user_email: User email.
     :type user_email: str
     :param amount: Income amount.
     :type amount: Decimal
@@ -197,15 +202,19 @@ def add_income(user_email: str, amount: Decimal, description: str = "None") -> d
         return {"success": False, "error": f"Error adding income: {str(e)}"}
 
 
-def _add_expense(user_email: str, amount: Decimal, description: str = "None"):
+def _add_expense(
+    user_email: str, amount: Decimal, description: str = "None", commit: bool = True
+):
     """Adds an expense amount to a user's account.
 
-    :param user_email: Use email.
+    :param user_email: User email.
     :type user_email: str
     :param amount: Expense amount.
     :type amount: Decimal
     :param description: Expense description for transaction history, defaults to "None"
     :type description: str, optional
+    :param commit: Flag to automatically commit the change, defaults to True
+    :type commit: bool, optional
     """
     try:
         # Validate the amount
@@ -233,7 +242,8 @@ def _add_expense(user_email: str, amount: Decimal, description: str = "None"):
         )
         db.add(transaction)
 
-        db.commit()
+        if commit:
+            db.commit()
     except Exception:
         db.rollback()
         raise
@@ -242,7 +252,7 @@ def _add_expense(user_email: str, amount: Decimal, description: str = "None"):
 def add_expense(user_email: str, amount: Decimal, description: str = "None") -> dict:
     """Request to add an expense amount to a user's account.
 
-    :param user_email: Use email.
+    :param user_email: User email.
     :type user_email: str
     :param amount: Espense amount.
     :type amount: Decimal
@@ -260,6 +270,34 @@ def add_expense(user_email: str, amount: Decimal, description: str = "None") -> 
         }
     except Exception as e:
         return {"success": False, "error": f"Error adding expense: {str(e)}"}
+
+
+def _send_money(
+    sender_email: str, receiver_email: str, amount: Decimal, description: str = "None"
+) -> dict:
+    """Sends money to another user's account.
+
+    :param sender_email: Sender email.
+    :type sender_email: str
+    :param receiver_email: Receiver email.
+    :type receiver_email: str
+    :param amount: Amount to send.
+    :type amount: Decimal
+    :param description: Description for transaction histories, defaults to "None"
+    :type description: str, optional
+    :return: Response object
+    :rtype: dict
+    """
+    try:
+        # Add the expense to the sender
+        _add_expense(sender_email, amount, description, commit=False)
+        # Add the income to the receiver
+        _add_income(receiver_email, amount, description, commit=False)
+        # Commit the changes
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
 
 
 def send_money(
@@ -280,11 +318,7 @@ def send_money(
     """
     description = f"({amount} from {sender_email} to {receiver_email}): " + description
     try:
-        # Add the expense to the sender
-        _add_expense(sender_email, amount, description)
-        # Add the income to the receiver
-        _add_income(receiver_email, amount, description)
-
+        _send_money(sender_email, receiver_email, amount, description)
         return {"success": True, "message": "Money sent succesfully."}
     except Exception as e:
         return {"success": False, "error": f"Error sending money: {str(e)}"}
