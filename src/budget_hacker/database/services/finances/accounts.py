@@ -151,11 +151,16 @@ def _add_income(
 
         # Get the user's account
         account = _get_account(user_email)
+        starting_balance = account.balance
 
         # Add the amount to the user's account balance
-        starting_balance = account.balance
+        # NOTE: The exploit involves sending more money than the receiver's account can hold,
+        # causing an error that leaks the receiver's account balance
         ending_balance = account.balance + amount
         if ending_balance > MAX_BALANCE:
+            # Throw an error as the sent amount would overload the user's account capacity
+            # NOTE: THIS IS THE VULNERABILITY. DURING A "SEND MONEY" OPERATION THIS ERROR MESSAGE
+            # EXPOSES THE RECEIVER'S ACCOUNT BALANCE TO THE SENDER
             raise RuntimeError(
                 f"Amount ${amount} plus current balance ${starting_balance} exceeds the maximum allowed account balance of ${MAX_BALANCE}."
             )
@@ -291,8 +296,12 @@ def _send_money(
     try:
         # Add the expense to the sender
         _add_expense(sender_email, amount, description, commit=False)
+
         # Add the income to the receiver
+        # NOTE: The exploit involves sending more money than the receiver's account can hold,
+        # causing an error that leaks the receiver's account balance
         _add_income(receiver_email, amount, description, commit=False)
+
         # Commit the changes
         db.commit()
     except Exception:
@@ -318,6 +327,8 @@ def send_money(
     """
     description = f"({amount} from {sender_email} to {receiver_email}): " + description
     try:
+        # NOTE: The exploit involves sending more money than the receiver's account can hold,
+        # causing an error that leaks the receiver's account balance
         _send_money(sender_email, receiver_email, amount, description)
         return {"success": True, "message": "Money sent succesfully."}
     except Exception as e:

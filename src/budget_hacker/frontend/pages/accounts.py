@@ -10,6 +10,7 @@ from ..utils.utils import (
     get_account_and_budget_funds_report,
     str_to_decimal,
 )
+from ...database.models.models import Transaction
 from ...database.services.finances.accounts import (
     get_transactions,
     add_income,
@@ -213,10 +214,15 @@ class SendMoneyPage(Page):
             print()
 
             # Request to send the money
+            # NOTE: The exploit involves sending more money than the receiver's account can hold,
+            # causing an error that leaks the receiver's account balance
             db_response = send_money(
                 state.email, recipient_email, amount_to_send, description
             )
             if not db_response["success"]:
+                # NOTE: If the sent amount would overload the receiver's account capacity, the response
+                # from send_money() will contain an error. This error exposes the receiver's account
+                # balance to the current user when it gets printed out in the following line
                 print(db_response["error"] + "\n")
                 retry = input("Would you like to try again? (y or n): ")
                 print()
@@ -262,6 +268,7 @@ class AccountHistoryPage(Page):
             # Display each transaction
             transaction_num = 1
             for transaction in db_response["transactions"]:
+                transaction: Transaction
                 print(f"-- TRANSACTION {transaction_num}--")
                 print(f"Date: {transaction.date}")
                 print(f"Starting Balance: ${transaction.starting_balance}")
