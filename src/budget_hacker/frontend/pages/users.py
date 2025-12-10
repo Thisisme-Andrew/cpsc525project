@@ -193,7 +193,7 @@ class DeleteUserPage(Page):
         clear_screen()
         print("--Delete User Account--\n")
 
-        print(f"Deleting user: {state.email}\n")
+        print(f"Deleting user: {state.email}. Press Enter to cancel and go back:\n")
 
         while True:
             confirm = input("Confirm your email: ")
