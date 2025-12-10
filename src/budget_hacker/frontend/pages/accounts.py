@@ -34,8 +34,11 @@ class AddIncomePage(Page):
         clear_screen()
         print("--Add Income--\n")
 
+        # Display the user's account funds
+        print(get_account_and_budget_funds_report() + "\n")
+
         while True:
-            print("Please enter income amount or press Enter to go back:\n")
+            print("Please enter an income amount or press Enter to go back:\n")
 
             income = input("Amount: $")
             if not income:
@@ -99,8 +102,11 @@ class AddExpensePage(Page):
         clear_screen()
         print("--Add Expense--\n")
 
+        # Display the user's account funds
+        print(get_account_and_budget_funds_report() + "\n")
+
         while True:
-            print("Please enter expense amount or press Enter to go back:\n")
+            print("Please enter an expense amount or press Enter to go back:\n")
 
             expense = input("Amount: $")
             if not expense:
@@ -169,7 +175,7 @@ class SendMoneyPage(Page):
 
         while True:
             # Get and validate the recipient email
-            print("Please enter recipient email or press Enter to go back:\n")
+            print("Please enter a recipient email or press Enter to go back:\n")
             recipient_email = input("Recipient email: ")
             if not recipient_email:
                 break
