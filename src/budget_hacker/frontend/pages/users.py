@@ -37,6 +37,11 @@ class LoginPage(Page):
             email = input("Email: ")
             if not email:
                 return WelcomePage()
+            try:
+                validate_email(email)
+            except EmailNotValidError:
+                print("Invalid email format. Please try again.\n")
+                continue
 
             # Get and hash the password
             password = getpass("Password: ")
@@ -95,7 +100,6 @@ class CreateUserPage(Page):
             email = input("Email: ")
             if not email:
                 return WelcomePage()
-
             try:
                 validate_email(email)
             except EmailNotValidError:
