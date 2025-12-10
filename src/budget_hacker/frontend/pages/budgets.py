@@ -99,7 +99,7 @@ class ManageBudgetsPage(Page):
         clear_screen()
 
         # Display the page title
-        print("Manage Budgets\n")
+        print("--Manage Budgets--\n")
 
         # Get the user's budgets
         budgets_resp = get_budgets(state.email)
@@ -173,7 +173,7 @@ class AddFundsPage(Page):
         :rtype: Page
         """
         clear_screen()
-        print("Add Funds\n")
+        print("--Add Funds--\n")
 
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
@@ -247,7 +247,7 @@ class RemoveFundsPage(Page):
         :rtype: Page
         """
         clear_screen()
-        print("Remove Funds\n")
+        print("--Remove Funds--\n")
 
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
@@ -308,7 +308,7 @@ class DeleteBudgetPage(Page):
         :rtype: Page
         """
         clear_screen()
-        print("Delete Budget\n")
+        print("--Delete Budget--\n")
 
         while True:
             # Display a table for the budget
@@ -343,7 +343,7 @@ class CreateBudgetPage(Page):
         :rtype: Page
         """
         clear_screen()
-        print("Create Budget\n")
+        print("--Create Budget--\n")
 
         print("Create a budget or press Enter to go back:\n")
 

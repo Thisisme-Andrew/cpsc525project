@@ -32,7 +32,7 @@ class AddIncomePage(Page):
         from .main_dashboard import MainDashboardPage
 
         clear_screen()
-        print("Add Income\n")
+        print("--Add Income--\n")
 
         while True:
             print("Please enter income amount or press Enter to go back:\n")
@@ -92,7 +92,7 @@ class AddExpensePage(Page):
         from .main_dashboard import MainDashboardPage
 
         clear_screen()
-        print("Add Expense\n")
+        print("--Add Expense--\n")
 
         while True:
             print("Please enter expense amount or press Enter to go back:\n")
@@ -151,7 +151,7 @@ class SendMoneyPage(Page):
         from .main_dashboard import MainDashboardPage
 
         clear_screen()
-        print("Send Money\n")
+        print("--Send Money--\n")
 
         # Display the user's account funds
         print(get_account_and_budget_funds_report() + "\n")
@@ -230,7 +230,7 @@ class AccountHistoryPage(Page):
         from .main_dashboard import MainDashboardPage
 
         clear_screen()
-        print("Account History\n")
+        print("--Account History--\n")
 
         while True:
             db_response = get_transactions(state.email)
