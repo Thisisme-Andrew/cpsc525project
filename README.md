@@ -97,7 +97,7 @@ Result:
 5. Enter the maximum account capacity for Bob's income:
 
     - Amount: $<99999999.99>
-    - Description: \<Maximize bob's account for the exploit.>
+    - Description: \<Maximize Bob's account for the exploit.>
     - Add more income? (y or n): \<n>
 
 6. Select "Send Money":
