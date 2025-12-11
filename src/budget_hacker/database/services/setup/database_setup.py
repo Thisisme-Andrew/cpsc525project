@@ -1,12 +1,10 @@
-"""
-Initial setup to populate the database with default data.
-"""
+"""Initial setup to populate the database with default data."""
 
 from decimal import Decimal
 
 from ..finances.budgets import create_budget
-from .... import db, engine
-from ...models.models import Base, User
+from .... import engine
+from ...models.models import Base
 from ..users.users import create_user
 from ..finances.accounts import add_income
 

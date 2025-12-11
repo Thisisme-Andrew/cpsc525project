@@ -1,7 +1,9 @@
+"""Settings pages."""
+
 from collections import OrderedDict
 
-from .users import ChangePasswordPage, DeleteUserPage
 from .page_templates import NavigationPage
+from .users import ChangePasswordPage, DeleteUserPage
 
 
 class SettingsPage(NavigationPage):

@@ -99,7 +99,7 @@ class ManageBudgetsPage(Page):
         clear_screen()
 
         # Display the page title
-        print("Manage Budgets\n")
+        print("--Manage Budgets--\n")
 
         # Get the user's budgets
         budgets_resp = get_budgets(state.email)
@@ -173,7 +173,7 @@ class AddFundsPage(Page):
         :rtype: Page
         """
         clear_screen()
-        print("Add Funds\n")
+        print("--Add Funds--\n")
 
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
@@ -192,7 +192,7 @@ class AddFundsPage(Page):
         while True:
             # Get the amount of funds to add
             print("Please enter an amount of funds to add or press Enter to go back:\n")
-            amount = input("Amount: ")
+            amount = input("Amount: $")
             if not amount:
                 break
 
@@ -247,7 +247,7 @@ class RemoveFundsPage(Page):
         :rtype: Page
         """
         clear_screen()
-        print("Remove Funds\n")
+        print("--Remove Funds--\n")
 
         # Display a table for the budget
         print(budgets_to_table([self.budget]) + "\n")
@@ -260,7 +260,7 @@ class RemoveFundsPage(Page):
             print(
                 "Please enter an amount of funds to remove or press Enter to go back:\n"
             )
-            amount = input("Amount: ")
+            amount = input("Amount: $")
             if not amount:
                 break
 
@@ -308,7 +308,7 @@ class DeleteBudgetPage(Page):
         :rtype: Page
         """
         clear_screen()
-        print("Delete Budget\n")
+        print("--Delete Budget--\n")
 
         while True:
             # Display a table for the budget
@@ -343,7 +343,7 @@ class CreateBudgetPage(Page):
         :rtype: Page
         """
         clear_screen()
-        print("Create Budget\n")
+        print("--Create Budget--\n")
 
         print("Create a budget or press Enter to go back:\n")
 
@@ -364,7 +364,7 @@ class CreateBudgetPage(Page):
 
         while True:
             # Get the budget goal amount
-            goal = input("Budget goal ($): ")
+            goal = input("Budget goal: $")
             if not goal:
                 print("Returning to the previous page...")
                 return BudgetsDashboardPage()

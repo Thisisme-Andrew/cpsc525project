@@ -1,3 +1,5 @@
+"""Command-line interface runner."""
+
 from .pages.page_templates import Page
 from .pages.main_dashboard import WelcomePage
 

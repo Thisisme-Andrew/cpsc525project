@@ -1,3 +1,5 @@
+"""User pages."""
+
 from email_validator import EmailNotValidError, validate_email
 from getpass import getpass
 from time import sleep
@@ -35,6 +37,11 @@ class LoginPage(Page):
             email = input("Email: ")
             if not email:
                 return WelcomePage()
+            try:
+                validate_email(email)
+            except EmailNotValidError:
+                print("Invalid email format. Please try again.\n")
+                continue
 
             # Get and hash the password
             password = getpass("Password: ")
@@ -93,7 +100,6 @@ class CreateUserPage(Page):
             email = input("Email: ")
             if not email:
                 return WelcomePage()
-
             try:
                 validate_email(email)
             except EmailNotValidError:
@@ -193,7 +199,7 @@ class DeleteUserPage(Page):
         clear_screen()
         print("--Delete User Account--\n")
 
-        print(f"Deleting user: {state.email}\n")
+        print(f"Deleting user: {state.email}. Press Enter to cancel and go back:\n")
 
         while True:
             confirm = input("Confirm your email: ")

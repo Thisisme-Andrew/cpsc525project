@@ -1,6 +1,4 @@
-"""
-General utility functions.
-"""
+"""General utility functions."""
 
 from collections import OrderedDict
 from decimal import Decimal

@@ -1,6 +1,4 @@
-"""
-Application runner.
-"""
+"""Application runner."""
 
 from .database.services.setup.database_setup import run_db_setup
 from .frontend.cli import CLI

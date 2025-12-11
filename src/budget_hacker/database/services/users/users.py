@@ -1,7 +1,9 @@
+"""Database services for users."""
+
 import hashlib
 
-from .... import db
 from ...models.models import User
+from .... import db
 
 # Password salt
 SALT = "CPSC525SecurePasswordSalt123!"
