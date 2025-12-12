@@ -35,6 +35,13 @@ Budget Hacker is a text-based finance and budget management application. Each us
     python app.py
     ```
 
+## Default Users
+
+| Email           | Password | Starting Balance | Budget Name | Budget Balance | Goal       |
+| --------------- | -------- | ---------------- | ----------- | -------------- | ---------- |
+| bob@gmail.com   | password | $ 0.00           | New Car     | $ 0.00         | $ 10000.00 |
+| alice@gmail.com | password | $ 12345.00       | New Car     | $ 0.00         | $ 10000.00 |
+
 ## Exploit Explanation
 
 Location: [/src/budget_hacker/database/services/finances/accounts.py](/src/budget_hacker/database/services/finances/accounts.py)
@@ -97,7 +104,7 @@ Result:
 5. Enter the maximum account capacity for Bob's income:
 
     - Amount: $<99999999.99>
-    - Description: \<Maximize bob's account for the exploit.>
+    - Description: \<Maximize Bob's account for the exploit.>
     - Add more income? (y or n): \<n>
 
 6. Select "Send Money":
@@ -115,9 +122,14 @@ Result:
 
     - In the error message "Error sending money: Amount $99999999.99 plus current balance $12345.00 exceeds the maximum allowed account balance of $99999999.99." Alice's account balance is revealed as "$12345.00"
 
-## Default Users
+## Exploit Script Example
 
-| Email           | Password | Starting Balance | Budget Name | Budget Balance | Goal       |
-| --------------- | -------- | ---------------- | ----------- | -------------- | ---------- |
-| bob@gmail.com   | password | $ 0.00           | New Car     | $ 0.00         | $ 10000.00 |
-| alice@gmail.com | password | $ 12345.00       | New Car     | $ 0.00         | $ 10000.00 |
+Location: [exploit.py](exploit.py)
+
+How to run the exploit script:
+
+```
+python exploit.py
+```
+
+This example exploit script exposes Alice's account balance in its output message: "Discovered the account balance for alice@gmail.com: **$12345.00**". It works by automating the same steps used to manually perform the exploit, as described in the [How to Run the Application](#How-to-Run-the-Application) section.
