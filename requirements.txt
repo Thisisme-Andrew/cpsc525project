@@ -1,3 +1,4 @@
 email_validator==2.3.0
+pexpect==4.9.0
 prettytable==3.17.0
-SQLAlchemy==2.0.44
+SQLAlchemy==2.0.45
