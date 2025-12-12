@@ -314,7 +314,7 @@ class DeleteBudgetPage(Page):
             # Display a table for the budget
             print(budgets_to_table([self.budget]) + "\n")
 
-            confirm = input("Are you sure you want to delte this budget? (y or n): ")
+            confirm = input("Are you sure you want to delete this budget? (y or n): ")
             if not confirm.lower() in ["y", "yes"]:
                 print("Aborting...")
                 sleep(1)
